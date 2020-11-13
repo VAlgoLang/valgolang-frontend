@@ -1,0 +1,6 @@
+html, body {
+    font-family: "Roboto", sans-serif !important;
+    overflow-x: hidden;
+    height:100%;
+    scroll-behavior: smooth;
+}
