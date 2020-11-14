@@ -65,6 +65,7 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({width, height}) => {
             inertia: true
         })
         .draggable({
+            inertia: true,
             listeners: {
                 move(event) {
                     let new_x = position[event.target.id].x + event.dx
