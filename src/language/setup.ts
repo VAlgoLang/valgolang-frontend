@@ -10,7 +10,6 @@ export function setupLanguage() {
     }
     monaco.languages.register(languageExtensionPoint);
     monaco.languages.onLanguage(languageID, () => {
-        console.log("here")
         monaco.languages.setLanguageConfiguration(languageID, monarchLanguage );
         monaco.languages.setMonarchTokensProvider(languageID, language );
     });
