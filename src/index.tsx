@@ -3,11 +3,15 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import {setupLanguage} from "./language/setup";
+import {APIService} from "./services/API";
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister();
+
+export const apiService = new APIService();
+
 setupLanguage();
 ReactDOM.render(
     <App/>,

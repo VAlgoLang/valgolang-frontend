@@ -1,26 +1,25 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useState} from "react";
 import "./Home.css";
-import {Button, ButtonGroup, Card, Col, Container, Dropdown, DropdownButton, Row} from "react-bootstrap";
+import {Alert, Button, ButtonGroup, Card, Col, Container, Dropdown, DropdownButton, Row} from "react-bootstrap";
 import ManimEditor from "../../components/Editor/Editor";
+import FileSelector from "../../components/FileSelector/FileSelector";
 import * as monaco from 'monaco-editor-core';
+import {apiService} from "../../index";
 
 export enum FileType {
     STYLESHEET,
     MANIMDSLCODE
 }
 
+
 const Home: React.FC = () => {
 
-    const inputRef = useRef<any>(null);
     const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor>()
     const [currentFileType, setFileType] = useState<FileType>(FileType.MANIMDSLCODE);
     const [manimDSL, setManimDSL] = useState<string>();
     const [stylesheet, setStylesheet] = useState<string>();
+    const [alertMessage, setAlertMessage] = useState("");
 
-    /* Used when file upload button clicked to access invisible a tag responsible for file upload */
-    function clickFileUpload() {
-        inputRef.current.click()
-    }
 
     async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         let files = e.target.files!;
@@ -38,10 +37,7 @@ const Home: React.FC = () => {
         setFileType(FileType.MANIMDSLCODE)
     }
 
-    useEffect(() => {
-        inputRef!.current!.directory = true;
-        inputRef!.current!.webkitdirectory = true;
-    }, [])
+
 
     function switchFileType(flag: FileType) {
         if(flag === currentFileType) {
@@ -55,6 +51,19 @@ const Home: React.FC = () => {
             editor?.setValue(manimDSL || "")
         }
         setFileType(flag)
+    }
+
+    async function submitCode() {
+        if (currentFileType === FileType.STYLESHEET) {
+            setStylesheet(editor?.getValue())
+        } else {
+            setManimDSL(editor?.getValue())
+        }
+        let response = await apiService.compileCode(manimDSL || "", stylesheet || "{}", false)
+        if(!response.success) {
+            console.log(response)
+            setAlertMessage(response.message)
+        }
     }
 
     return (
@@ -72,23 +81,30 @@ const Home: React.FC = () => {
                             File Explorer
                         </Card.Header>
                         <Card.Body>
-                            <Button variant="primary" size="lg" block onClick={() => switchFileType(FileType.MANIMDSLCODE)}>
+                            <FileSelector name={"Import Directory"} onChange={handleChange} directory={true}/>
+                            <FileSelector name={"Import File"} onChange={handleChange} directory={false}/>
+                            <Button variant="primary" size="lg" block disabled={currentFileType == FileType.MANIMDSLCODE}
+                                    onClick={() => switchFileType(FileType.MANIMDSLCODE)}>
                                 ManimDSL Code
                             </Button>
-                            <Button variant="primary" size="lg" block onClick={() => switchFileType(FileType.STYLESHEET)}>
+                            <Button variant="primary" size="lg" block  disabled={currentFileType == FileType.STYLESHEET}
+                                    onClick={() => switchFileType(FileType.STYLESHEET)}>
                                 Stylesheet
                             </Button>
                         </Card.Body>
                     </Card>
                 </Col>
-                <Col md={7}>
-                    <Button onClick={clickFileUpload}>Import Directory</Button>
-                    <input style={{display: "none"}} ref={inputRef} onChange={handleChange} type="file"
-                           accept={".manimdsl"} multiple/>
+                <Col md={6}>
+
                     <ManimEditor language="manimDSL" setParentEditor={(e) => setEditor(e)}/>
+
+                    {alertMessage !== "" && <Alert style={{margin: "10px"}} variant={'danger'} onClose={() =>setAlertMessage("")} dismissible>
+                        <Alert.Heading>Oops, something went wrong!</Alert.Heading>
+                        {alertMessage.split("\n").map(line => <p>{line}</p>)}
+                    </Alert>}
                     <ButtonGroup style={{float: "right", marginTop: "10px"}}>
                         <DropdownButton as={ButtonGroup} title="Submit" id="bg-nested-dropdown">
-                            <Dropdown.Item onClick={() => console.log(stylesheet)} eventKey="1">Compile!</Dropdown.Item>
+                            <Dropdown.Item onClick={submitCode} eventKey="1">Compile!</Dropdown.Item>
                             <Dropdown.Item eventKey="2">Compile with Advanced Options</Dropdown.Item>
                         </DropdownButton>
                     </ButtonGroup>
