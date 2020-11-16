@@ -5,6 +5,7 @@ import ManimEditor from "../../components/Editor/Editor";
 import FileSelector from "../../components/FileSelector/FileSelector";
 import * as monaco from 'monaco-editor-core';
 import {apiService} from "../../index";
+import PlacementManger from "../../components/PlacementManager/PlacementManager";
 
 export enum FileType {
     STYLESHEET,
@@ -21,7 +22,7 @@ const Home: React.FC = () => {
     const [alertMessage, setAlertMessage] = useState("");
 
 
-    async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    async function filePickerChange(e: React.ChangeEvent<HTMLInputElement>) {
         let files = e.target.files!;
         for (let i = 0; i < files.length; i++) {
             let file = files.item(i)!;
@@ -29,12 +30,14 @@ const Home: React.FC = () => {
                 let text = await file.text();
                 setManimDSL(text)
                 editor?.setValue(text)
+                setFileType(FileType.MANIMDSLCODE)
             } else if (file.name.endsWith(".json")) {
                 let text = await file.text();
                 setStylesheet(text)
+                editor?.setValue(text)
+                setFileType(FileType.STYLESHEET)
             }
         }
-        setFileType(FileType.MANIMDSLCODE)
     }
 
 
@@ -54,20 +57,41 @@ const Home: React.FC = () => {
     }
 
     async function submitCode() {
-        if (currentFileType === FileType.STYLESHEET) {
-            setStylesheet(editor?.getValue())
-        } else {
-            setManimDSL(editor?.getValue())
-        }
-        let response = await apiService.compileCode(manimDSL || "", stylesheet || "{}", false)
+        let response = await apiService.compileCode(getManiMDSLText() || "", getStyleSheetText() || "{}", false)
         if(!response.success) {
-            console.log(response)
             setAlertMessage(response.message)
         }
     }
 
+    function getStyleSheetText() {
+        if (currentFileType == FileType.STYLESHEET) {
+            setStylesheet(editor?.getValue())
+            return editor?.getValue()
+        } else {
+            return stylesheet
+        }
+    }
+
+    function getManiMDSLText() {
+        if (currentFileType == FileType.MANIMDSLCODE) {
+            setManimDSL(editor?.getValue())
+            return editor?.getValue()
+        } else {
+            return manimDSL
+        }
+    }
+
+    function addHideCode(hideCode: boolean) {
+        let parsedJSON = JSON.parse(getStyleSheetText() || "{}")
+        parsedJSON.hideCode = hideCode
+        setStylesheet(JSON.stringify(parsedJSON))
+        if(currentFileType === FileType.STYLESHEET) {
+            editor?.setValue(JSON.stringify(parsedJSON))
+        }
+    }
+
     return (
-        <Container fluid>
+        <Container fluid>`
             <Row md={12}>
                 <h1 style={{textAlign: "center", margin: "0 auto", padding: "20px"}}>ManimDSL Online Editor</h1>
             </Row>
@@ -81,8 +105,8 @@ const Home: React.FC = () => {
                             File Explorer
                         </Card.Header>
                         <Card.Body>
-                            <FileSelector name={"Import Directory"} onChange={handleChange} directory={true}/>
-                            <FileSelector name={"Import File"} onChange={handleChange} directory={false}/>
+                            <FileSelector name={"Import Directory"} onChange={filePickerChange} directory={true}/>
+                            <FileSelector name={"Import File"} onChange={filePickerChange} directory={false}/>
                             <Button variant="primary" size="lg" block disabled={currentFileType == FileType.MANIMDSLCODE}
                                     onClick={() => switchFileType(FileType.MANIMDSLCODE)}>
                                 ManimDSL Code
@@ -108,6 +132,8 @@ const Home: React.FC = () => {
                             <Dropdown.Item eventKey="2">Compile with Advanced Options</Dropdown.Item>
                         </DropdownButton>
                     </ButtonGroup>
+                    <Button onClick={() => addHideCode(true)}>Add Hide Code</Button>
+
                     {/*<div style={{width: "100%", margin: "0 auto"}}>*/}
                     {/*    <PlacementManger width={700} height={400}/>*/}
                     {/*</div>*/}
