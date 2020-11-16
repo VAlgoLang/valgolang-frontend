@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import "./Home.css";
-import {Alert, Button, ButtonGroup, Card, Col, Container, Dropdown, DropdownButton, Row} from "react-bootstrap";
+import {Alert, Button, ButtonGroup, Card, Col, Container, Dropdown, DropdownButton, Row, Form} from "react-bootstrap";
 import ManimEditor from "../../components/Editor/Editor";
 import FileSelector from "../../components/FileSelector/FileSelector";
 import * as monaco from 'monaco-editor-core';
@@ -19,6 +19,9 @@ const Home: React.FC = () => {
     const [manimDSL, setManimDSL] = useState<string>();
     const [stylesheet, setStylesheet] = useState<string>();
     const [alertMessage, setAlertMessage] = useState("");
+    const [generatePython, setGeneratePython] = useState(false)
+    const [hideCode, setHideCode] = useState(false)
+    const [quality, setQuality] = useState("low")
 
 
     async function filePickerChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -56,7 +59,7 @@ const Home: React.FC = () => {
     }
 
     async function submitCode() {
-        let response = await apiService.compileCode(getManiMDSLText() || "", getStyleSheetText() || "{}", false)
+        let response = await apiService.compileCode(getManiMDSLText() || "", getStyleSheetText() || "{}", generatePython, quality)
         if(!response.success) {
             setAlertMessage(response.message)
         }
@@ -80,17 +83,18 @@ const Home: React.FC = () => {
         }
     }
 
-    function addHideCode(hideCode: boolean) {
+    function updateHideCode(hideCode: boolean) {
+        setHideCode(hideCode)
         let parsedJSON = JSON.parse(getStyleSheetText() || "{}")
         parsedJSON.hideCode = hideCode
         setStylesheet(JSON.stringify(parsedJSON))
         if(currentFileType === FileType.STYLESHEET) {
-            editor?.setValue(JSON.stringify(parsedJSON))
+            editor?.setValue(JSON.stringify(parsedJSON, null, 2))
         }
     }
 
     return (
-        <Container fluid>`
+        <Container fluid>
             <Row md={12}>
                 <h1 style={{textAlign: "center", margin: "0 auto", padding: "20px"}}>ManimDSL Online Editor</h1>
             </Row>
@@ -131,11 +135,46 @@ const Home: React.FC = () => {
                             <Dropdown.Item eventKey="2">Compile with Advanced Options</Dropdown.Item>
                         </DropdownButton>
                     </ButtonGroup>
-                    <Button onClick={() => addHideCode(true)}>Add Hide Code</Button>
-
                     {/*<div style={{width: "100%", margin: "0 auto"}}>*/}
                     {/*    <PlacementManger width={700} height={400}/>*/}
                     {/*</div>*/}
+                </Col>
+                <Col md={2}>
+                    <Card>
+                        <Card.Header>
+                            Compiling Options
+                        </Card.Header>
+                        <Card.Body>
+                            <Form.Check name={"Generate Python"} onChange={() => setGeneratePython(!generatePython)} label={"Generate Python file"} />
+                            <Form.Check name={"Generate Python"} onChange={() => updateHideCode(!hideCode)} label={"Hide code in animation"}/>
+                            <hr/>
+                            Video Quality:
+                            <Form.Check
+                                type="radio"
+                                label="Low quality"
+                                name="qualityRadios"
+                                value="low"
+                                checked={quality === "low"}
+                                onChange={() => setQuality("low")}
+                            />
+                            <Form.Check
+                                type="radio"
+                                label="Medium quality"
+                                name="qualityRadios"
+                                value="medium"
+                                checked={quality === "medium"}
+                                onChange={() => setQuality("medium")}
+                            />
+                            <Form.Check
+                                type="radio"
+                                label="High quality"
+                                name="qualityRadios"
+                                value="high"
+                                checked={quality === "high"}
+                                onChange={() => setQuality("high")}
+                            />
+                        </Card.Body>
+                    </Card>
                 </Col>
             </Row>
         </Container>
