@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import "./Home.css";
-import {Alert, ButtonGroup, Card, Col, Container, Dropdown, DropdownButton, Row, Form} from "react-bootstrap";
+import {Alert, Button, ButtonGroup, Card, Col, Container, Dropdown, DropdownButton, Row, Form, Spinner} from "react-bootstrap";
 import ManimEditor from "../../components/Editor/Editor";
 import FileSelector from "../../components/FileSelector/FileSelector";
 import * as monaco from 'monaco-editor-core';
@@ -24,6 +24,7 @@ const Home: React.FC = () => {
     const [generatePython, setGeneratePython] = useState(false)
     const [hideCode, setHideCode] = useState(false)
     const [quality, setQuality] = useState("low")
+    const [loadingSubmission, setLoadingSubmission] = useState(false)
 
 
     async function filePickerChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -62,10 +63,13 @@ const Home: React.FC = () => {
     }
 
     async function submitCode() {
+        setLoadingSubmission(true)
+        console.log("loading")
         let response = await apiService.compileCode(getManiMDSLText() || "", getStyleSheetText() || "{}", "myAnim", generatePython, quality)
         if (!response.success) {
             setAlertMessage(response.message)
         }
+        setLoadingSubmission(false)
     }
 
     function getStyleSheetText() {
@@ -90,9 +94,38 @@ const Home: React.FC = () => {
         setHideCode(hideCode)
         let parsedJSON = JSON.parse(getStyleSheetText() || "{}")
         parsedJSON.hideCode = hideCode
-        setStylesheet(JSON.stringify(parsedJSON, null, 2))
+        setStylesheet(JSON.stringify(parsedJSON, null, 4))
         if(currentFileType === FileType.STYLESHEET) {
-            editor?.setValue(JSON.stringify(parsedJSON, null, 2))
+            editor?.setValue(JSON.stringify(parsedJSON, null, 4))
+        }
+    }
+
+    function renderSubmitButton() {
+        if (loadingSubmission) {
+            return (
+                <ButtonGroup style={{ float: "right", marginTop: "10px" }}>
+                    <Button disabled>
+                        <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                            style={{ marginRight: "5px" }}
+                        />
+                        Compiling
+                    </Button>
+                </ButtonGroup>
+            )
+        } else {
+            return (
+                <ButtonGroup style={{ float: "right", marginTop: "10px" }}>
+                    <DropdownButton as={ButtonGroup} title="Submit" id="bg-nested-dropdown">
+                        <Dropdown.Item onClick={submitCode} eventKey="1">Compile!</Dropdown.Item>
+                        <Dropdown.Item eventKey="2">Compile with Advanced Options</Dropdown.Item>
+                    </DropdownButton>
+                </ButtonGroup>
+            )
         }
     }
 
@@ -126,12 +159,13 @@ const Home: React.FC = () => {
                         <Alert.Heading>Oops, something went wrong!</Alert.Heading>
                         {alertMessage.split("\n").map(line => <p>{line}</p>)}
                     </Alert>}
-                    <ButtonGroup style={{float: "right", marginTop: "10px"}}>
+                    {renderSubmitButton()}
+                    {/* <ButtonGroup style={{float: "right", marginTop: "10px"}}>
                         <DropdownButton as={ButtonGroup} title="Submit" id="bg-nested-dropdown">
                             <Dropdown.Item onClick={submitCode} eventKey="1">Compile!</Dropdown.Item>
                             <Dropdown.Item eventKey="2">Compile with Advanced Options</Dropdown.Item>
                         </DropdownButton>
-                    </ButtonGroup>
+                    </ButtonGroup> */}
                     {/*<div style={{width: "100%", margin: "0 auto"}}>*/}
                     {/*    <PlacementManger width={700} height={400}/>*/}
                     {/*</div>*/}
