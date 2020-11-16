@@ -59,7 +59,7 @@ const Home: React.FC = () => {
     }
 
     async function submitCode() {
-        let response = await apiService.compileCode(getManiMDSLText() || "", getStyleSheetText() || "{}", false)
+        let response = await apiService.compileCode(getManiMDSLText() || "", getStyleSheetText() || "{}", "myAnim", true)
         if (!response.success) {
             setAlertMessage(response.message)
         }

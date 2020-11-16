@@ -22,12 +22,11 @@ const failedAPIResponse = (message: string) => {
 
 export class APIService {
 
-    buildRequest(method: Method, path: string, data: { [key: string]: any } | FormData = {}, params: { [key: string]: any } = {}): Promise<APIResponse> {
+    buildRequest(method: Method, path: string, data: { [key: string]: any } | FormData = {}, fileName?: string): Promise<APIResponse> {
         let config: AxiosRequestConfig = {
             url: apiURL + path,
             method: method,
             data: data,
-            params: params,
             responseType: "blob"
         }
         return axios.request(config).then(async res => {
@@ -39,7 +38,8 @@ export class APIService {
                 const url = window.URL.createObjectURL(new Blob([res.data]));
                 const link = document.createElement('a');
                 link.href = url;
-                link.setAttribute('download', 'file.mp4');
+                let extension = res.headers["content-type"].split("/")[1]
+                link.setAttribute('download', (fileName || 'out')  + "." + extension);
                 document.body.appendChild(link);
                 link.click();
                 return {success: true, file: true, data: res.data} as APIResponse
@@ -49,13 +49,13 @@ export class APIService {
         })
     }
 
-    compileCode(code: string, stylesheet: string, producePython: boolean) {
+    compileCode(code: string, stylesheet: string, outputFilename: string, producePython: boolean) {
         let data = new FormData()
         data.append("file", new Blob([code]));
         data.append("stylesheet", new Blob([stylesheet]));
         data.append('pythonFile', producePython);
-        data.append('outputName', 'myAnim');
-        return this.buildRequest("POST", "/compile", data)
+        data.append('outputName', outputFilename);
+        return this.buildRequest("POST", "/compile", data, outputFilename)
     }
 
 }
