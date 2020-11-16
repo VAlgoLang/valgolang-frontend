@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import "./Home.css";
-import {Alert, Button, ButtonGroup, Card, Col, Container, Dropdown, DropdownButton, Row, Form} from "react-bootstrap";
+import {Alert, ButtonGroup, Card, Col, Container, Dropdown, DropdownButton, Row, Form} from "react-bootstrap";
 import ManimEditor from "../../components/Editor/Editor";
 import FileSelector from "../../components/FileSelector/FileSelector";
 import * as monaco from 'monaco-editor-core';
@@ -18,6 +18,8 @@ const Home: React.FC = () => {
     const [currentFileType, setFileType] = useState<FileType>(FileType.MANIMDSLCODE);
     const [manimDSL, setManimDSL] = useState<string>();
     const [stylesheet, setStylesheet] = useState<string>();
+    const [manimFileName, setManimFileName] = useState<string>("code.manimdsl");
+    const [stylesheetFileName, setStylesheetFileName] = useState<string>("test.json");
     const [alertMessage, setAlertMessage] = useState("");
     const [generatePython, setGeneratePython] = useState(false)
     const [hideCode, setHideCode] = useState(false)
@@ -31,11 +33,13 @@ const Home: React.FC = () => {
             if (file.name.endsWith(".manimdsl")) {
                 let text = await file.text();
                 setManimDSL(text)
+                setManimFileName(file.name)
                 editor?.setValue(text)
                 setFileType(FileType.MANIMDSLCODE)
             } else if (file.name.endsWith(".json")) {
                 let text = await file.text();
                 setStylesheet(text)
+                setStylesheetFileName(file.name)
                 editor?.setValue(text)
                 setFileType(FileType.STYLESHEET)
             }
@@ -43,9 +47,8 @@ const Home: React.FC = () => {
     }
 
 
-
     function switchFileType(flag: FileType) {
-        if(flag === currentFileType) {
+        if (flag === currentFileType) {
             return;
         }
         if (flag === FileType.STYLESHEET) {
@@ -59,8 +62,8 @@ const Home: React.FC = () => {
     }
 
     async function submitCode() {
-        let response = await apiService.compileCode(getManiMDSLText() || "", getStyleSheetText() || "{}", generatePython, quality)
-        if(!response.success) {
+        let response = await apiService.compileCode(getManiMDSLText() || "", getStyleSheetText() || "{}", "myAnim", generatePython, quality)
+        if (!response.success) {
             setAlertMessage(response.message)
         }
     }
@@ -87,7 +90,7 @@ const Home: React.FC = () => {
         setHideCode(hideCode)
         let parsedJSON = JSON.parse(getStyleSheetText() || "{}")
         parsedJSON.hideCode = hideCode
-        setStylesheet(JSON.stringify(parsedJSON))
+        setStylesheet(JSON.stringify(parsedJSON, null, 2))
         if(currentFileType === FileType.STYLESHEET) {
             editor?.setValue(JSON.stringify(parsedJSON, null, 2))
         }
@@ -110,22 +113,16 @@ const Home: React.FC = () => {
                         <Card.Body>
                             <FileSelector name={"Import Directory"} onChange={filePickerChange} directory={true}/>
                             <FileSelector name={"Import File"} onChange={filePickerChange} directory={false}/>
-                            <Button variant="primary" size="lg" block disabled={currentFileType === FileType.MANIMDSLCODE}
-                                    onClick={() => switchFileType(FileType.MANIMDSLCODE)}>
-                                ManimDSL Code
-                            </Button>
-                            <Button variant="primary" size="lg" block  disabled={currentFileType === FileType.STYLESHEET}
-                                    onClick={() => switchFileType(FileType.STYLESHEET)}>
-                                Stylesheet
-                            </Button>
+
                         </Card.Body>
                     </Card>
                 </Col>
                 <Col md={6}>
+                    <ManimEditor language="manimDSL" currentFileType={currentFileType} manimDSLName={manimFileName} styleSheetName={stylesheetFileName}
+                                 setParentEditor={(e) => setEditor(e)} setFileType={switchFileType}/>
 
-                    <ManimEditor language="manimDSL" setParentEditor={(e) => setEditor(e)}/>
-
-                    {alertMessage !== "" && <Alert style={{margin: "10px"}} variant={'danger'} onClose={() =>setAlertMessage("")} dismissible>
+                    {alertMessage !== "" &&
+                    <Alert style={{margin: "10px"}} variant={'danger'} onClose={() => setAlertMessage("")} dismissible>
                         <Alert.Heading>Oops, something went wrong!</Alert.Heading>
                         {alertMessage.split("\n").map(line => <p>{line}</p>)}
                     </Alert>}
