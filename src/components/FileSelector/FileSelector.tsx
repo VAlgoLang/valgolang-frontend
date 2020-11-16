@@ -15,7 +15,7 @@ const FileSelector: React.FC<FileSelectorProps> = ({onChange, name, directory}) 
             inputRef!.current!.directory = true;
             inputRef!.current!.webkitdirectory = true;
         }
-    }, [])
+    }, [directory])
 
     /* Used when file upload button clicked to access invisible a tag responsible for file upload */
     function clickFileUpload() {

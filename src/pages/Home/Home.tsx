@@ -5,7 +5,6 @@ import ManimEditor from "../../components/Editor/Editor";
 import FileSelector from "../../components/FileSelector/FileSelector";
 import * as monaco from 'monaco-editor-core';
 import {apiService} from "../../index";
-import PlacementManger from "../../components/PlacementManager/PlacementManager";
 
 export enum FileType {
     STYLESHEET,
@@ -64,7 +63,7 @@ const Home: React.FC = () => {
     }
 
     function getStyleSheetText() {
-        if (currentFileType == FileType.STYLESHEET) {
+        if (currentFileType === FileType.STYLESHEET) {
             setStylesheet(editor?.getValue())
             return editor?.getValue()
         } else {
@@ -73,7 +72,7 @@ const Home: React.FC = () => {
     }
 
     function getManiMDSLText() {
-        if (currentFileType == FileType.MANIMDSLCODE) {
+        if (currentFileType === FileType.MANIMDSLCODE) {
             setManimDSL(editor?.getValue())
             return editor?.getValue()
         } else {
@@ -107,11 +106,11 @@ const Home: React.FC = () => {
                         <Card.Body>
                             <FileSelector name={"Import Directory"} onChange={filePickerChange} directory={true}/>
                             <FileSelector name={"Import File"} onChange={filePickerChange} directory={false}/>
-                            <Button variant="primary" size="lg" block disabled={currentFileType == FileType.MANIMDSLCODE}
+                            <Button variant="primary" size="lg" block disabled={currentFileType === FileType.MANIMDSLCODE}
                                     onClick={() => switchFileType(FileType.MANIMDSLCODE)}>
                                 ManimDSL Code
                             </Button>
-                            <Button variant="primary" size="lg" block  disabled={currentFileType == FileType.STYLESHEET}
+                            <Button variant="primary" size="lg" block  disabled={currentFileType === FileType.STYLESHEET}
                                     onClick={() => switchFileType(FileType.STYLESHEET)}>
                                 Stylesheet
                             </Button>
