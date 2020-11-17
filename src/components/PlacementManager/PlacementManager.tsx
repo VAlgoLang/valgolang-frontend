@@ -3,23 +3,24 @@ import interact from "interactjs";
 import "./PlacementManager.css";
 import {Button} from "react-bootstrap";
 
-type Coordinate = { x: number, y: number, width: number, height: number }
+export type Coordinate = { x: number, y: number, width: number, height: number }
 
 interface PlacementMangerProps {
     width: number,
-    height: number
+    height: number,
+    initialState: { [key: string]: Coordinate },
+    setBoundary: (boundary: { [key: string]: Coordinate }) => void;
 }
 
-const PlacementManger: React.FC<PlacementMangerProps> = ({width, height}) => {
+const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initialState, setBoundary}) => {
 
-    let initialState: { [key: string]: Coordinate } = {
-        "array": {x: 100, y: 200, width: 100, height: 200},
-        "array1": {x: 0, y: 0, width: 200, height: 100}
-    };
+    let manimWidth = 14
+    let manimHeight = 8
     const [position, setPosition] = useState<{ [key: string]: Coordinate }>(initialState)
 
     useEffect(() => {
-    }, [])
+        setBoundary(position)
+    }, [position])
 
     interact('.resize-drag')
         .resizable({
@@ -85,41 +86,6 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({width, height}) => {
             ]
         })
 
-    function computeManimCoordinates() {
-        let manimWidth = 14
-        let manimHeight = 8
-        let manimCoordinates = Object.keys(position).map(shapeName => {
-            let shape = position[shapeName]
-            let coordinates = {x: 0, y: 0, width: 0, height: 0}
-            let heightScaleFactor = manimHeight / height;
-            let widthScaleFactor = manimWidth / width;
-
-            coordinates.height = shape.height * heightScaleFactor
-            coordinates.width = shape.width * widthScaleFactor
-
-            // Calculations broken down on purpose to make it easier to follow
-
-            // Normalise to manim width
-            coordinates.x = shape.x * widthScaleFactor
-            // Move x relative to manim origin
-            coordinates.x -= manimWidth / 2
-
-            // Normalise to manim height
-            coordinates.y = shape.y * heightScaleFactor
-            // Move y relative to manim origin
-            coordinates.y = (coordinates.y * -1) + manimHeight / 2
-            // Move y to coordinate to ll from ul
-            coordinates.y -= coordinates.height
-
-            // Fix to 1 decimal place
-            coordinates.y = parseFloat(coordinates.y.toFixed(1))
-            coordinates.x = parseFloat(coordinates.x.toFixed(1))
-            coordinates.width = parseFloat(coordinates.width.toFixed(1))
-            coordinates.height = parseFloat(coordinates.height.toFixed(1))
-            return {name: shapeName, position: coordinates}
-        })
-        console.log(manimCoordinates)
-    }
 
     return (
         <div style={{height: height + "px", width: width + "px", margin: "0 auto"}}>
@@ -134,7 +100,6 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({width, height}) => {
                     </div>
                 })}
             </div>
-            <Button style={{float: "right", margin: "20px auto"}} onClick={computeManimCoordinates}>Submit</Button>
         </div>
     )
 };

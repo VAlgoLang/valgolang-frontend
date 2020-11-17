@@ -58,6 +58,12 @@ export class APIService {
         return this.buildRequest("POST", "/compile", data, outputFilename)
     }
 
+    getBoundaries(code: string, stylesheet: string) {
+        let data = new FormData()
+        data.append("file", new Blob([code]));
+        data.append("stylesheet", new Blob([stylesheet]));
+        return this.buildRequest("POST", "/compile/boundaries", data)
+    }
 }
 
 
