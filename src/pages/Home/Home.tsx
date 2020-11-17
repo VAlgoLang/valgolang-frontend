@@ -86,7 +86,7 @@ const Home: React.FC = () => {
     async function submitCode() {
         setLoadingSubmission(true)
         let stylesheetLatest = getStyleSheetText()
-        if (boundary !== {}) {
+        if (boundary !== {} && pageNumber == 1) {
             let parsedStylesheet = JSON.parse(stylesheetLatest || "{}")
             parsedStylesheet.positions = boundaryManager.computeManimCoordinates(boundary)
             stylesheetLatest = JSON.stringify(parsedStylesheet)
