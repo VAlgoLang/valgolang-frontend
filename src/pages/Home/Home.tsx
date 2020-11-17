@@ -1,6 +1,18 @@
 import React, {useEffect, useState} from "react";
 import "./Home.css";
-import {Alert, Button, ButtonGroup, Card, Col, Container, Dropdown, DropdownButton, Row, Form, Spinner} from "react-bootstrap";
+import {
+    Alert,
+    Button,
+    ButtonGroup,
+    Card,
+    Col,
+    Container,
+    Dropdown,
+    DropdownButton,
+    Form,
+    Row,
+    Spinner
+} from "react-bootstrap";
 import ManimEditor from "../../components/Editor/Editor";
 import FileSelector from "../../components/FileSelector/FileSelector";
 import * as monaco from 'monaco-editor-core';
@@ -86,7 +98,7 @@ const Home: React.FC = () => {
     async function submitCode() {
         setLoadingSubmission(true)
         let stylesheetLatest = getStyleSheetText()
-        if (boundary !== {} && pageNumber == 1) {
+        if (boundary !== {} && pageNumber === 1) {
             let parsedStylesheet = JSON.parse(stylesheetLatest || "{}")
             parsedStylesheet.positions = boundaryManager.computeManimCoordinates(boundary)
             stylesheetLatest = JSON.stringify(parsedStylesheet)
@@ -135,7 +147,7 @@ const Home: React.FC = () => {
         let parsedJSON = JSON.parse(getStyleSheetText() || "{}")
         parsedJSON.hideCode = hideCode
         setStylesheet(JSON.stringify(parsedJSON, null, 4))
-        if(currentFileType === FileType.STYLESHEET) {
+        if (currentFileType === FileType.STYLESHEET) {
             editor?.setValue(JSON.stringify(parsedJSON, null, 4))
         }
     }
@@ -143,7 +155,7 @@ const Home: React.FC = () => {
     function renderSubmitButton() {
         if (loadingSubmission) {
             return (
-                <ButtonGroup style={{ float: "right", marginTop: "10px" }}>
+                <ButtonGroup style={{float: "right", marginTop: "10px"}}>
                     <Button disabled>
                         <Spinner
                             as="span"
@@ -151,7 +163,7 @@ const Home: React.FC = () => {
                             size="sm"
                             role="status"
                             aria-hidden="true"
-                            style={{ marginRight: "5px" }}
+                            style={{marginRight: "5px"}}
                         />
                         Compiling
                     </Button>
@@ -159,11 +171,11 @@ const Home: React.FC = () => {
             )
         } else {
             return (
-                <ButtonGroup style={{ float: "right", marginTop: "10px" }}>
+                <ButtonGroup style={{float: "right", marginTop: "10px"}}>
                     <DropdownButton as={ButtonGroup} title="Submit" id="bg-nested-dropdown">
                         <Dropdown.Item onClick={submitCode} eventKey="1">Compile!</Dropdown.Item>
                         <Dropdown.Item onClick={getBoundaries} eventKey="2">Compile with Advanced
-                                    Options</Dropdown.Item>
+                            Options</Dropdown.Item>
                     </DropdownButton>
                 </ButtonGroup>
             )
@@ -253,8 +265,10 @@ const Home: React.FC = () => {
                             Compiling Options
                         </Card.Header>
                         <Card.Body>
-                            <Form.Check name={"Generate Python"} onChange={() => setGeneratePython(!generatePython)} label={"Generate Python file"} />
-                            <Form.Check name={"Generate Python"} onChange={() => updateHideCode(!hideCode)} label={"Hide code in animation"}/>
+                            <Form.Check name={"Generate Python"} onChange={() => setGeneratePython(!generatePython)}
+                                        label={"Generate Python file"}/>
+                            <Form.Check name={"Generate Python"} onChange={() => updateHideCode(!hideCode)}
+                                        label={"Hide code in animation"}/>
                             <hr/>
                             Video Quality:
                             <Form.Check
