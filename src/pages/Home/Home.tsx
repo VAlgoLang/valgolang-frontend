@@ -7,6 +7,7 @@ import * as monaco from 'monaco-editor-core';
 import {apiService} from "../../index";
 import PlacementManger from "../../components/PlacementManager/PlacementManager";
 import BoundaryManager, {Boundaries} from "../../utils/BoundaryManager";
+import {downloadFile, downloadZip} from "../../utils/FileDownloader";
 
 export enum FileType {
     STYLESHEET,
@@ -99,6 +100,18 @@ const Home: React.FC = () => {
         }
     }
 
+    function downloadFileType(fileType: FileType) {
+        if(fileType === FileType.STYLESHEET) {
+            downloadFile(stylesheetFileName, getStyleSheetText() || "{}")
+        } else {
+            downloadFile(manimFileName, getManiMDSLText() || "")
+        }
+    }
+
+    function downloadProject() {
+        downloadZip([{filename: stylesheetFileName, text: stylesheet || "{}"}, {filename: manimFileName, text: manimDSL || ""}])
+    }
+
     return (
         <Container fluid>`
             <Row md={12}>
@@ -116,16 +129,15 @@ const Home: React.FC = () => {
                         <Card.Body>
                             <FileSelector name={"Import Directory"} onChange={filePickerChange} directory={true}/>
                             <FileSelector name={"Import File"} onChange={filePickerChange} directory={false}/>
-
                         </Card.Body>
                     </Card>
                 </Col>
                 <Col md={6}>
                     {pageNumber === 0 &&
                         <>
-                            <ManimEditor language="manimDSL" currentFileType={currentFileType} manimDSLName={manimFileName}
+                            <ManimEditor downloadFile={downloadFileType} language="manimDSL" currentFileType={currentFileType} manimDSLName={manimFileName}
                                          styleSheetName={stylesheetFileName}
-                                         setParentEditor={(e) => setEditor(e)} setFileType={switchFileType}/>
+                                         setParentEditor={(e) => setEditor(e)} setFileType={switchFileType} downloadProject={downloadProject}/>
 
                             {alertMessage !== "" &&
                             <Alert style={{margin: "10px"}} variant={'danger'} onClose={() => setAlertMessage("")}
