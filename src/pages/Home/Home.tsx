@@ -145,7 +145,7 @@ const Home: React.FC = () => {
             )
         }
     }
-    
+
     function downloadFileType(fileType: FileType) {
         if(fileType === FileType.STYLESHEET) {
             downloadFile(stylesheetFileName, getStyleSheetText() || "{}")
@@ -160,12 +160,22 @@ const Home: React.FC = () => {
 
     return (
         <Container fluid>
+            {loadingSubmission ?
+                <div id="loadingOverlay">
+                    <Spinner
+                        as="span"
+                        animation="border"
+                        role="status"
+                        aria-hidden="true"
+                        variant="primary"
+                    />
+                </div> : <></>
+            }
             <Row md={12}>
                 <h1 style={{textAlign: "center", margin: "0 auto", padding: "20px"}}>ManimDSL Online Editor</h1>
             </Row>
             <Row>
                 <Col md={1}>
-
                 </Col>
                 <Col md={2}>
                     <Card>
@@ -184,7 +194,6 @@ const Home: React.FC = () => {
                             <ManimEditor downloadFile={downloadFileType} language="manimDSL" currentFileType={currentFileType} manimDSLName={manimFileName}
                                          styleSheetName={stylesheetFileName}
                                          setParentEditor={(e) => setEditor(e)} setFileType={switchFileType} downloadProject={downloadProject}/>
-
                             {alertMessage !== "" &&
                             <Alert style={{margin: "10px"}} variant={'danger'} onClose={() => setAlertMessage("")}
                                    dismissible>
