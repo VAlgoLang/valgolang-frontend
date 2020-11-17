@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import "./Home.css";
 import {Alert, Button, ButtonGroup, Card, Col, Container, Dropdown, DropdownButton, Row} from "react-bootstrap";
 import ManimEditor from "../../components/Editor/Editor";
@@ -28,6 +28,22 @@ const Home: React.FC = () => {
     const [pageNumber, setPageNumber] = useState(0);
     const [showSuccess, setShowSuccess] = useState(false)
     const boundaryManager = new BoundaryManager(700, 400)
+
+    useEffect(() => {
+        if (showSuccess) {
+            setTimeout(() => {
+                setShowSuccess(false)
+            }, 5000)
+        }
+    }, [showSuccess])
+
+    useEffect(() => {
+        if (alertMessage !== "") {
+            setTimeout(() => {
+                setAlertMessage("")
+            }, 5000)
+        }
+    }, [alertMessage])
 
     async function filePickerChange(e: React.ChangeEvent<HTMLInputElement>) {
         let files = e.target.files!;
@@ -150,7 +166,6 @@ const Home: React.FC = () => {
                                      styleSheetName={stylesheetFileName}
                                      setParentEditor={(e) => setEditor(e)} setFileType={switchFileType}
                                      downloadProject={downloadProject}/>
-
                         {alertMessage !== "" &&
                         <Alert style={{margin: "10px"}} variant={'danger'} onClose={() => setAlertMessage("")}
                                dismissible>
