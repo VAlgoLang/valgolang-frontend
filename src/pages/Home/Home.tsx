@@ -45,7 +45,7 @@ const Home: React.FC = () => {
         if (alertMessage !== "") {
             setTimeout(() => {
                 setAlertMessage("")
-            }, 5000)
+            }, 10000)
         }
     }, [alertMessage])
 
