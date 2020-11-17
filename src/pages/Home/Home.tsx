@@ -1,6 +1,19 @@
 import React, {useEffect, useState} from "react";
 import "./Home.css";
-import {Alert, Button, ButtonGroup, Card, Col, Container, Dropdown, DropdownButton, Row} from "react-bootstrap";
+import {
+    Alert,
+    Button,
+    ButtonGroup,
+    Card,
+    Col,
+    Container,
+    Dropdown,
+    DropdownButton,
+    Form,
+    Row,
+    Spinner,
+    InputGroup
+} from "react-bootstrap";
 import ManimEditor from "../../components/Editor/Editor";
 import FileSelector from "../../components/FileSelector/FileSelector";
 import * as monaco from 'monaco-editor-core';
@@ -22,8 +35,13 @@ const Home: React.FC = () => {
     const [manimDSL, setManimDSL] = useState<string>();
     const [stylesheet, setStylesheet] = useState<string>();
     const [manimFileName, setManimFileName] = useState<string>("code.manimdsl");
-    const [stylesheetFileName, setStylesheetFileName] = useState<string>("test.json");
+    const [stylesheetFileName, setStylesheetFileName] = useState<string>("stylesheet.json");
     const [alertMessage, setAlertMessage] = useState("");
+    const [generatePython, setGeneratePython] = useState(false)
+    const [hideCode, setHideCode] = useState(false)
+    const [quality, setQuality] = useState("low")
+    const [loadingSubmission, setLoadingSubmission] = useState(false)
+    const [outputFilename, setOutputFilename] = useState("myAnim")
     const [boundary, setBoundary] = useState<Boundaries>({})
     const [pageNumber, setPageNumber] = useState(0);
     const [showSuccess, setShowSuccess] = useState(false)
@@ -41,7 +59,7 @@ const Home: React.FC = () => {
         if (alertMessage !== "") {
             setTimeout(() => {
                 setAlertMessage("")
-            }, 5000)
+            }, 10000)
         }
     }, [alertMessage])
 
@@ -80,22 +98,26 @@ const Home: React.FC = () => {
     }
 
     async function submitCode() {
+        setLoadingSubmission(true)
         let stylesheetLatest = getStyleSheetText()
-        if (boundary !== {}) {
+        if (boundary !== {} && pageNumber === 1) {
             let parsedStylesheet = JSON.parse(stylesheetLatest || "{}")
             parsedStylesheet.positions = boundaryManager.computeManimCoordinates(boundary)
             stylesheetLatest = JSON.stringify(parsedStylesheet)
         }
-        let response = await apiService.compileCode(getManiMDSLText() || "", stylesheetLatest || "{}", "myAnim", false)
+        let response = await apiService.compileCode(getManiMDSLText() || "", stylesheetLatest || "{}", outputFilename, generatePython, quality)
         if (!response.success) {
             setAlertMessage(response.message)
         }
+        setLoadingSubmission(false)
     }
 
     async function getBoundaries() {
+        setLoadingSubmission(true)
         let response = await apiService.getBoundaries(getManiMDSLText() || "", getStyleSheetText() || "{}")
         setBoundary(response.data)
         setPageNumber(1);
+        setLoadingSubmission(false)
     }
 
     async function validateCode() {
@@ -124,6 +146,46 @@ const Home: React.FC = () => {
         }
     }
 
+    function updateHideCode(hideCode: boolean) {
+        setHideCode(hideCode)
+        let parsedJSON = JSON.parse(getStyleSheetText() || "{}")
+        parsedJSON.hideCode = hideCode
+        setStylesheet(JSON.stringify(parsedJSON, null, 4))
+        if (currentFileType === FileType.STYLESHEET) {
+            editor?.setValue(JSON.stringify(parsedJSON, null, 4))
+        }
+    }
+
+    function renderSubmitButton() {
+        if (loadingSubmission) {
+            return (
+                <ButtonGroup style={{float: "right", marginTop: "10px"}}>
+                    <Button disabled>
+                        <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                            style={{marginRight: "5px"}}
+                        />
+                        Compiling
+                    </Button>
+                </ButtonGroup>
+            )
+        } else {
+            return (
+                <ButtonGroup style={{float: "right", marginTop: "10px"}}>
+                    <DropdownButton as={ButtonGroup} title="Submit" id="bg-nested-dropdown">
+                        <Dropdown.Item onClick={submitCode} eventKey="1">Compile!</Dropdown.Item>
+                        <Dropdown.Item onClick={getBoundaries} eventKey="2">Compile with Advanced
+                            Options</Dropdown.Item>
+                    </DropdownButton>
+                </ButtonGroup>
+            )
+        }
+    }
+
     function downloadFileType(fileType: FileType) {
         if (fileType === FileType.STYLESHEET) {
             downloadFile(stylesheetFileName, getStyleSheetText() || "{}")
@@ -140,13 +202,23 @@ const Home: React.FC = () => {
     }
 
     return (
-        <Container fluid>`
+        <Container fluid>
+            {loadingSubmission ?
+                <div id="loadingOverlay">
+                    <Spinner
+                        as="span"
+                        animation="border"
+                        role="status"
+                        aria-hidden="true"
+                        variant="primary"
+                    />
+                </div> : <></>
+            }
             <Row md={12}>
                 <h1 style={{textAlign: "center", margin: "0 auto", padding: "20px"}}>ManimDSL Online Editor</h1>
             </Row>
             <Row>
                 <Col md={1}>
-
                 </Col>
                 <Col md={2}>
                     <Card>
@@ -177,13 +249,7 @@ const Home: React.FC = () => {
                                dismissible>
                             All good!
                         </Alert>}
-                        <ButtonGroup style={{float: "right", marginTop: "10px"}}>
-                            <DropdownButton as={ButtonGroup} title="Submit" id="bg-nested-dropdown">
-                                <Dropdown.Item onClick={submitCode} eventKey="1">Compile!</Dropdown.Item>
-                                <Dropdown.Item onClick={getBoundaries} eventKey="2">Compile with Advanced
-                                    Options</Dropdown.Item>
-                            </DropdownButton>
-                        </ButtonGroup>
+                        {renderSubmitButton()}
                         <Button style={{float: "right", margin: "10px"}} variant="success"
                                 onClick={validateCode}>Validate</Button>
                     </div>
@@ -196,6 +262,55 @@ const Home: React.FC = () => {
                         <Button style={{float: "right"}} onClick={submitCode}>Compile!</Button>
                     </div>
                     }
+                </Col>
+                <Col md={2}>
+                    <Card>
+                        <Card.Header>
+                            Compiling Options
+                        </Card.Header>
+                        <Card.Body>
+                            <Form.Check name={"Generate Python"} onChange={() => setGeneratePython(!generatePython)}
+                                        label={"Generate Python file"}/>
+                            <Form.Check name={"Generate Python"} onChange={() => updateHideCode(!hideCode)}
+                                        label={"Hide code in animation"}/>
+                            <hr/>
+                            Video Quality:
+                            <Form.Check
+                                type="radio"
+                                label="Low quality"
+                                name="qualityRadios"
+                                value="low"
+                                checked={quality === "low"}
+                                onChange={() => setQuality("low")}
+                            />
+                            <Form.Check
+                                type="radio"
+                                label="Medium quality"
+                                name="qualityRadios"
+                                value="medium"
+                                checked={quality === "medium"}
+                                onChange={() => setQuality("medium")}
+                            />
+                            <Form.Check
+                                type="radio"
+                                label="High quality"
+                                name="qualityRadios"
+                                value="high"
+                                checked={quality === "high"}
+                                onChange={() => setQuality("high")}
+                            />
+                            <hr />
+                            Output File Name:
+                            <InputGroup size="sm">
+                                <Form.Control
+                                    placeholder="myAnim"
+                                    onChange={e => setOutputFilename(e.target.value || "myAnim")}/>
+                                <InputGroup.Append>
+                                    <InputGroup.Text>.mp4</InputGroup.Text>
+                                </InputGroup.Append>
+                            </InputGroup>
+                        </Card.Body>
+                    </Card>
                 </Col>
             </Row>
         </Container>

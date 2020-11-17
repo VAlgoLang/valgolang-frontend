@@ -49,12 +49,13 @@ export class APIService {
         })
     }
 
-    compileCode(code: string, stylesheet: string, outputFilename: string, producePython: boolean) {
+    compileCode(code: string, stylesheet: string, outputFilename: string, producePython: boolean, quality: string) {
         let data = new FormData()
         data.append("file", new Blob([code]));
         data.append("stylesheet", new Blob([stylesheet]));
         data.append('pythonFile', producePython);
         data.append('outputName', outputFilename);
+        data.append('quality', quality);
         return this.buildRequest("POST", "/compile", data, outputFilename)
     }
 
