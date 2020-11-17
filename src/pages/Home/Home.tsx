@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import "./Home.css";
-import {Alert, ButtonGroup, Card, Col, Container, Dropdown, DropdownButton, Row} from "react-bootstrap";
+import {Alert, Button, ButtonGroup, Card, Col, Container, Dropdown, DropdownButton, Row} from "react-bootstrap";
 import ManimEditor from "../../components/Editor/Editor";
 import FileSelector from "../../components/FileSelector/FileSelector";
 import * as monaco from 'monaco-editor-core';
@@ -133,21 +133,21 @@ const Home: React.FC = () => {
                                 <Alert.Heading>Oops, something went wrong!</Alert.Heading>
                                 {alertMessage.split("\n").map(line => <p>{line}</p>)}
                             </Alert>}
-
+                            <ButtonGroup style={{float: "right", marginTop: "10px"}}>
+                                <DropdownButton as={ButtonGroup} title="Submit" id="bg-nested-dropdown">
+                                    <Dropdown.Item onClick={submitCode} eventKey="1">Compile!</Dropdown.Item>
+                                    <Dropdown.Item onClick={getBoundaries} eventKey="2">Compile with Advanced
+                                        Options</Dropdown.Item>
+                                </DropdownButton>
+                            </ButtonGroup>
                         </>
                     }
                     {pageNumber === 1 &&
                         <div style={{width: "100%", margin: "0 auto"}}>
                             <PlacementManger width={700} height={400} initialState={boundaryManager.getRectangleBoundary(boundary)} setBoundary={setBoundary}/>
+                            <Button style={{float: "right"}} onClick={submitCode}>Compile!</Button>
                         </div>
                     }
-                    <ButtonGroup style={{float: "right", marginTop: "10px"}}>
-                        <DropdownButton as={ButtonGroup} title="Submit" id="bg-nested-dropdown">
-                            <Dropdown.Item onClick={submitCode} eventKey="1">Compile!</Dropdown.Item>
-                            <Dropdown.Item onClick={getBoundaries} eventKey="2">Compile with Advanced
-                                Options</Dropdown.Item>
-                        </DropdownButton>
-                    </ButtonGroup>
                 </Col>
             </Row>
         </Container>
