@@ -5,6 +5,9 @@ import ManimEditor from "../../components/Editor/Editor";
 import FileSelector from "../../components/FileSelector/FileSelector";
 import * as monaco from 'monaco-editor-core';
 import {apiService} from "../../index";
+import PlacementManger from "../../components/PlacementManager/PlacementManager";
+import BoundaryManager, {Boundaries} from "../../utils/BoundaryManager";
+import {downloadFile, downloadZip} from "../../utils/FileDownloader";
 
 export enum FileType {
     STYLESHEET,
@@ -25,7 +28,10 @@ const Home: React.FC = () => {
     const [hideCode, setHideCode] = useState(false)
     const [quality, setQuality] = useState("low")
     const [loadingSubmission, setLoadingSubmission] = useState(false)
+    const [boundary, setBoundary] = useState<Boundaries>({})
+    const [pageNumber, setPageNumber] = useState(0);
 
+    const boundaryManager = new BoundaryManager(700, 400)
 
     async function filePickerChange(e: React.ChangeEvent<HTMLInputElement>) {
         let files = e.target.files!;
@@ -47,7 +53,6 @@ const Home: React.FC = () => {
         }
     }
 
-
     function switchFileType(flag: FileType) {
         if (flag === currentFileType) {
             return;
@@ -64,12 +69,23 @@ const Home: React.FC = () => {
 
     async function submitCode() {
         setLoadingSubmission(true)
-        console.log("loading")
-        let response = await apiService.compileCode(getManiMDSLText() || "", getStyleSheetText() || "{}", "myAnim", generatePython, quality)
+        let stylesheetLatest = getStyleSheetText()
+        if(boundary !== {}) {
+            let parsedStylesheet = JSON.parse(stylesheetLatest || "{}")
+            parsedStylesheet.positions = boundaryManager.computeManimCoordinates(boundary)
+            stylesheetLatest = JSON.stringify(parsedStylesheet)
+        }
+        let response = await apiService.compileCode(getManiMDSLText() || "", stylesheetLatest || "{}", "myAnim", generatePython, quality)
         if (!response.success) {
             setAlertMessage(response.message)
         }
         setLoadingSubmission(false)
+    }
+
+    async function getBoundaries() {
+        let response = await apiService.getBoundaries(getManiMDSLText() || "", getStyleSheetText() || "{}")
+        setBoundary(response.data)
+        setPageNumber(1);
     }
 
     function getStyleSheetText() {
@@ -122,11 +138,24 @@ const Home: React.FC = () => {
                 <ButtonGroup style={{ float: "right", marginTop: "10px" }}>
                     <DropdownButton as={ButtonGroup} title="Submit" id="bg-nested-dropdown">
                         <Dropdown.Item onClick={submitCode} eventKey="1">Compile!</Dropdown.Item>
-                        <Dropdown.Item eventKey="2">Compile with Advanced Options</Dropdown.Item>
+                        <Dropdown.Item onClick={getBoundaries} eventKey="2">Compile with Advanced
+                                        Options</Dropdown.Item>
                     </DropdownButton>
                 </ButtonGroup>
             )
         }
+    }
+    
+    function downloadFileType(fileType: FileType) {
+        if(fileType === FileType.STYLESHEET) {
+            downloadFile(stylesheetFileName, getStyleSheetText() || "{}")
+        } else {
+            downloadFile(manimFileName, getManiMDSLText() || "")
+        }
+    }
+
+    function downloadProject() {
+        downloadZip([{filename: stylesheetFileName, text: stylesheet || "{}"}, {filename: manimFileName, text: manimDSL || ""}])
     }
 
     return (
@@ -146,29 +175,31 @@ const Home: React.FC = () => {
                         <Card.Body>
                             <FileSelector name={"Import Directory"} onChange={filePickerChange} directory={true}/>
                             <FileSelector name={"Import File"} onChange={filePickerChange} directory={false}/>
-
                         </Card.Body>
                     </Card>
                 </Col>
                 <Col md={6}>
-                    <ManimEditor language="manimDSL" currentFileType={currentFileType} manimDSLName={manimFileName} styleSheetName={stylesheetFileName}
-                                 setParentEditor={(e) => setEditor(e)} setFileType={switchFileType}/>
+                    {pageNumber === 0 &&
+                        <>
+                            <ManimEditor downloadFile={downloadFileType} language="manimDSL" currentFileType={currentFileType} manimDSLName={manimFileName}
+                                         styleSheetName={stylesheetFileName}
+                                         setParentEditor={(e) => setEditor(e)} setFileType={switchFileType} downloadProject={downloadProject}/>
 
-                    {alertMessage !== "" &&
-                    <Alert style={{margin: "10px"}} variant={'danger'} onClose={() => setAlertMessage("")} dismissible>
-                        <Alert.Heading>Oops, something went wrong!</Alert.Heading>
-                        {alertMessage.split("\n").map(line => <p>{line}</p>)}
-                    </Alert>}
-                    {renderSubmitButton()}
-                    {/* <ButtonGroup style={{float: "right", marginTop: "10px"}}>
-                        <DropdownButton as={ButtonGroup} title="Submit" id="bg-nested-dropdown">
-                            <Dropdown.Item onClick={submitCode} eventKey="1">Compile!</Dropdown.Item>
-                            <Dropdown.Item eventKey="2">Compile with Advanced Options</Dropdown.Item>
-                        </DropdownButton>
-                    </ButtonGroup> */}
-                    {/*<div style={{width: "100%", margin: "0 auto"}}>*/}
-                    {/*    <PlacementManger width={700} height={400}/>*/}
-                    {/*</div>*/}
+                            {alertMessage !== "" &&
+                            <Alert style={{margin: "10px"}} variant={'danger'} onClose={() => setAlertMessage("")}
+                                   dismissible>
+                                <Alert.Heading>Oops, something went wrong!</Alert.Heading>
+                                {alertMessage.split("\n").map(line => <p>{line}</p>)}
+                            </Alert>}
+                            {renderSubmitButton()}
+                        </>
+                    }
+                    {pageNumber === 1 &&
+                        <div style={{width: "100%", margin: "0 auto"}}>
+                            <PlacementManger width={700} height={400} initialState={boundaryManager.getRectangleBoundary(boundary)} setBoundary={setBoundary}/>
+                            <Button style={{float: "right"}} onClick={submitCode}>Compile!</Button>
+                        </div>
+                    }
                 </Col>
                 <Col md={2}>
                     <Card>
