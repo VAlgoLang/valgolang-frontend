@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import interact from "interactjs";
 import "./PlacementManager.css";
 import {Boundaries} from "../../utils/BoundaryManager";
+import {Button, Modal} from "react-bootstrap";
 
 
 interface PlacementMangerProps {
@@ -9,9 +10,11 @@ interface PlacementMangerProps {
     height: number,
     initialState: Boundaries,
     setBoundary: (boundary: Boundaries) => void;
+    showModal: boolean;
+    hideModal: (save: boolean) => void;
 }
 
-const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initialState, setBoundary}) => {
+const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initialState, setBoundary, showModal, hideModal}) => {
 
     const [position, setPosition] = useState<Boundaries>(initialState)
 
@@ -86,19 +89,31 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initial
 
 
     return (
-        <div style={{height: height + "px", width: width + "px", margin: "0 auto"}}>
-            <div className="placementContainer" >
-                {Object.keys(initialState).map((shape, index) => {
-                    return <div key={index} id={shape} style={{
-                        transform: `translate(${position[shape].x}px, ${position[shape].y}px)`,
-                        height: position[shape].height,
-                        width: position[shape].width
-                    }} className="resize-drag">
-                        {shape}
+        <Modal show={showModal} onHide={() => hideModal(false)} size={"lg"}>
+            <Modal.Header closeButton>
+                <Modal.Title>Place Data Structures</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <div style={{height: height + "px", width: width + "px", margin: "0 auto"}}>
+                    <div className="placementContainer">
+                        {Object.keys(initialState).map((shape, index) => {
+                            return <div key={index} id={shape} style={{
+                                transform: `translate(${position[shape].x}px, ${position[shape].y}px)`,
+                                height: position[shape].height,
+                                width: position[shape].width
+                            }} className="resize-drag">
+                                {shape}
+                            </div>
+                        })}
                     </div>
-                })}
-            </div>
-        </div>
+                </div>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="primary" onClick={() => hideModal(true)}>
+                    Save Changes
+                </Button>
+            </Modal.Footer>
+        </Modal>
     )
 };
 

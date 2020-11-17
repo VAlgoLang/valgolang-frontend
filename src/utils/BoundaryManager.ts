@@ -55,18 +55,17 @@ class BoundaryManager {
         Object.keys(position).forEach(shapePosition => {
             let shape = position[shapePosition]
             let coordinate = {width: 0, height: 0, x: 0, y: 0}
-            coordinate.width  = (shape.width / this.manimWidth) * this.width
-            coordinate.height  = (this.height / this.manimHeight) * shape.height
+            coordinate.width = (shape.width / this.manimWidth) * this.width
+            coordinate.height = (this.height / this.manimHeight) * shape.height
             coordinate.x = shape.x + (this.manimWidth / 2)
             coordinate.x = coordinate.x * (this.width / this.manimWidth)
             coordinate.y = ((-shape.y) + 4)
-            coordinate.y = coordinate.y * (this.height/ this.manimHeight)
+            coordinate.y = coordinate.y * (this.height / this.manimHeight)
             coordinate.y -= coordinate.height
             positionNew[shapePosition] = coordinate
         })
         return positionNew
     }
-
 
 }
 

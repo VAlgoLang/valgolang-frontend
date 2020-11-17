@@ -10,9 +10,9 @@ import {
     Dropdown,
     DropdownButton,
     Form,
+    InputGroup,
     Row,
-    Spinner,
-    InputGroup
+    Spinner
 } from "react-bootstrap";
 import ManimEditor from "../../components/Editor/Editor";
 import FileSelector from "../../components/FileSelector/FileSelector";
@@ -43,7 +43,8 @@ const Home: React.FC = () => {
     const [loadingSubmission, setLoadingSubmission] = useState(false)
     const [outputFilename, setOutputFilename] = useState("myAnim")
     const [boundary, setBoundary] = useState<Boundaries>({})
-    const [pageNumber, setPageNumber] = useState(0);
+    const [computedBoundary, setComputedBoundary] = useState<Boundaries>({})
+    const [stage, setStage] = useState(0);
     const [showSuccess, setShowSuccess] = useState(false)
     const boundaryManager = new BoundaryManager(700, 400)
 
@@ -100,7 +101,7 @@ const Home: React.FC = () => {
     async function submitCode() {
         setLoadingSubmission(true)
         let stylesheetLatest = getStyleSheetText()
-        if (boundary !== {} && pageNumber === 1) {
+        if (boundary !== {} && stage === 1) {
             let parsedStylesheet = JSON.parse(stylesheetLatest || "{}")
             parsedStylesheet.positions = boundaryManager.computeManimCoordinates(boundary)
             stylesheetLatest = JSON.stringify(parsedStylesheet)
@@ -115,8 +116,8 @@ const Home: React.FC = () => {
     async function getBoundaries() {
         setLoadingSubmission(true)
         let response = await apiService.getBoundaries(getManiMDSLText() || "", getStyleSheetText() || "{}")
-        setBoundary(response.data)
-        setPageNumber(1);
+        setComputedBoundary(response.data)
+        setStage(1);
         setLoadingSubmission(false)
     }
 
@@ -201,6 +202,21 @@ const Home: React.FC = () => {
         }])
     }
 
+    function saveBoundaries(save: boolean) {
+        if (save) {
+            let stylesheetLatest = getStyleSheetText()
+            if (boundary !== {} && stage === 1) {
+                let parsedStylesheet = JSON.parse(stylesheetLatest || "{}")
+                parsedStylesheet.positions = boundaryManager.computeManimCoordinates(boundary)
+                let newStylesheet = JSON.stringify(parsedStylesheet, null, 4);
+                setStylesheet(newStylesheet)
+                if (currentFileType === FileType.STYLESHEET) editor?.setValue(newStylesheet)
+            }
+        }
+
+        setStage(0)
+    }
+
     return (
         <Container fluid>
             {loadingSubmission ?
@@ -232,7 +248,7 @@ const Home: React.FC = () => {
                     </Card>
                 </Col>
                 <Col md={6}>
-                    <div style={{display: pageNumber === 0 ? "initial" : "none"}}>
+                    <div>
                         <ManimEditor downloadFile={downloadFileType} language="manimDSL"
                                      currentFileType={currentFileType} manimDSLName={manimFileName}
                                      styleSheetName={stylesheetFileName}
@@ -253,15 +269,13 @@ const Home: React.FC = () => {
                         <Button style={{float: "right", margin: "10px"}} variant="success"
                                 onClick={validateCode}>Validate</Button>
                     </div>
-                    {pageNumber === 1 &&
                     <div style={{width: "100%", margin: "0 auto"}}>
-                        <PlacementManger width={700} height={400}
-                                         initialState={boundaryManager.getRectangleBoundary(boundary)}
-                                         setBoundary={setBoundary}/>
-                        <Button style={{float: "left"}} onClick={() => setPageNumber(0)}>Previous</Button>
-                        <Button style={{float: "right"}} onClick={submitCode}>Compile!</Button>
+                        {stage === 1 &&
+                        <PlacementManger width={700} height={400} showModal={stage === 1} hideModal={saveBoundaries}
+                                         initialState={boundaryManager.getRectangleBoundary(computedBoundary)}
+                                         setBoundary={setBoundary}/>}
+                        {/*<Button style={{float: "right"}} onClick={submitCode}>Compile!</Button>*/}
                     </div>
-                    }
                 </Col>
                 <Col md={2}>
                     <Card>
@@ -299,7 +313,7 @@ const Home: React.FC = () => {
                                 checked={quality === "high"}
                                 onChange={() => setQuality("high")}
                             />
-                            <hr />
+                            <hr/>
                             Output File Name:
                             <InputGroup size="sm">
                                 <Form.Control
