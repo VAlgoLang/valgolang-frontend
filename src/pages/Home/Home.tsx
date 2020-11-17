@@ -302,7 +302,7 @@ const Home: React.FC = () => {
                             <InputGroup size="sm">
                                 <Form.Control
                                     placeholder="myAnim"
-                                    onChange={e => setOutputFilename(e.target.value === "" ? "myAnim" : e.target.value)}/>
+                                    onChange={e => setOutputFilename(e.target.value || "myAnim")}/>
                                 <InputGroup.Append>
                                     <InputGroup.Text>.mp4</InputGroup.Text>
                                 </InputGroup.Append>
