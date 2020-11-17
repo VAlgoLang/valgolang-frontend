@@ -26,7 +26,7 @@ const Home: React.FC = () => {
     const [alertMessage, setAlertMessage] = useState("");
     const [boundary, setBoundary] = useState<Boundaries>({})
     const [pageNumber, setPageNumber] = useState(0);
-
+    const [showSuccess, setShowSuccess] = useState(false)
     const boundaryManager = new BoundaryManager(700, 400)
 
     async function filePickerChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -65,7 +65,7 @@ const Home: React.FC = () => {
 
     async function submitCode() {
         let stylesheetLatest = getStyleSheetText()
-        if(boundary !== {}) {
+        if (boundary !== {}) {
             let parsedStylesheet = JSON.parse(stylesheetLatest || "{}")
             parsedStylesheet.positions = boundaryManager.computeManimCoordinates(boundary)
             stylesheetLatest = JSON.stringify(parsedStylesheet)
@@ -80,6 +80,14 @@ const Home: React.FC = () => {
         let response = await apiService.getBoundaries(getManiMDSLText() || "", getStyleSheetText() || "{}")
         setBoundary(response.data)
         setPageNumber(1);
+    }
+
+    async function validateCode() {
+        let response = await apiService.getBoundaries(getManiMDSLText() || "", getStyleSheetText() || "{}")
+        setShowSuccess(response.success)
+        if (!response.success) {
+            setAlertMessage(response.message)
+        }
     }
 
     function getStyleSheetText() {
@@ -101,7 +109,7 @@ const Home: React.FC = () => {
     }
 
     function downloadFileType(fileType: FileType) {
-        if(fileType === FileType.STYLESHEET) {
+        if (fileType === FileType.STYLESHEET) {
             downloadFile(stylesheetFileName, getStyleSheetText() || "{}")
         } else {
             downloadFile(manimFileName, getManiMDSLText() || "")
@@ -109,7 +117,10 @@ const Home: React.FC = () => {
     }
 
     function downloadProject() {
-        downloadZip([{filename: stylesheetFileName, text: stylesheet || "{}"}, {filename: manimFileName, text: manimDSL || ""}])
+        downloadZip([{filename: stylesheetFileName, text: stylesheet || "{}"}, {
+            filename: manimFileName,
+            text: manimDSL || ""
+        }])
     }
 
     return (
@@ -133,32 +144,42 @@ const Home: React.FC = () => {
                     </Card>
                 </Col>
                 <Col md={6}>
-                    {pageNumber === 0 &&
-                        <>
-                            <ManimEditor downloadFile={downloadFileType} language="manimDSL" currentFileType={currentFileType} manimDSLName={manimFileName}
-                                         styleSheetName={stylesheetFileName}
-                                         setParentEditor={(e) => setEditor(e)} setFileType={switchFileType} downloadProject={downloadProject}/>
+                    <div style={{display: pageNumber === 0 ? "initial" : "none"}}>
+                        <ManimEditor downloadFile={downloadFileType} language="manimDSL"
+                                     currentFileType={currentFileType} manimDSLName={manimFileName}
+                                     styleSheetName={stylesheetFileName}
+                                     setParentEditor={(e) => setEditor(e)} setFileType={switchFileType}
+                                     downloadProject={downloadProject}/>
 
-                            {alertMessage !== "" &&
-                            <Alert style={{margin: "10px"}} variant={'danger'} onClose={() => setAlertMessage("")}
-                                   dismissible>
-                                <Alert.Heading>Oops, something went wrong!</Alert.Heading>
-                                {alertMessage.split("\n").map(line => <p>{line}</p>)}
-                            </Alert>}
-                            <ButtonGroup style={{float: "right", marginTop: "10px"}}>
-                                <DropdownButton as={ButtonGroup} title="Submit" id="bg-nested-dropdown">
-                                    <Dropdown.Item onClick={submitCode} eventKey="1">Compile!</Dropdown.Item>
-                                    <Dropdown.Item onClick={getBoundaries} eventKey="2">Compile with Advanced
-                                        Options</Dropdown.Item>
-                                </DropdownButton>
-                            </ButtonGroup>
-                        </>
-                    }
+                        {alertMessage !== "" &&
+                        <Alert style={{margin: "10px"}} variant={'danger'} onClose={() => setAlertMessage("")}
+                               dismissible>
+                            <Alert.Heading>Oops, something went wrong!</Alert.Heading>
+                            {alertMessage.split("\n").map(line => <p>{line}</p>)}
+                        </Alert>}
+                        {showSuccess &&
+                        <Alert style={{margin: "10px"}} variant={'success'} onClose={() => setShowSuccess(false)}
+                               dismissible>
+                            All good!
+                        </Alert>}
+                        <ButtonGroup style={{float: "right", marginTop: "10px"}}>
+                            <DropdownButton as={ButtonGroup} title="Submit" id="bg-nested-dropdown">
+                                <Dropdown.Item onClick={submitCode} eventKey="1">Compile!</Dropdown.Item>
+                                <Dropdown.Item onClick={getBoundaries} eventKey="2">Compile with Advanced
+                                    Options</Dropdown.Item>
+                            </DropdownButton>
+                        </ButtonGroup>
+                        <Button style={{float: "right", margin: "10px"}} variant="success"
+                                onClick={validateCode}>Validate</Button>
+                    </div>
                     {pageNumber === 1 &&
-                        <div style={{width: "100%", margin: "0 auto"}}>
-                            <PlacementManger width={700} height={400} initialState={boundaryManager.getRectangleBoundary(boundary)} setBoundary={setBoundary}/>
-                            <Button style={{float: "right"}} onClick={submitCode}>Compile!</Button>
-                        </div>
+                    <div style={{width: "100%", margin: "0 auto"}}>
+                        <PlacementManger width={700} height={400}
+                                         initialState={boundaryManager.getRectangleBoundary(boundary)}
+                                         setBoundary={setBoundary}/>
+                        <Button style={{float: "left"}} onClick={() => setPageNumber(0)}>Previous</Button>
+                        <Button style={{float: "right"}} onClick={submitCode}>Compile!</Button>
+                    </div>
                     }
                 </Col>
             </Row>
