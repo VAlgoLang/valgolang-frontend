@@ -74,7 +74,7 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                          icon={faDownload}/>
                 </span>
             </div>
-            <div ref={assignRef} style={{height: '80vh'}}/>
+            <div ref={assignRef} style={{height: '70vh'}}/>
         </Card>
     )
 }
