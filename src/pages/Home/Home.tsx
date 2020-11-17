@@ -34,7 +34,7 @@ const Home: React.FC = () => {
     const [manimDSL, setManimDSL] = useState<string>();
     const [stylesheet, setStylesheet] = useState<string>();
     const [manimFileName, setManimFileName] = useState<string>("code.manimdsl");
-    const [stylesheetFileName, setStylesheetFileName] = useState<string>("test.json");
+    const [stylesheetFileName, setStylesheetFileName] = useState<string>("stylesheet.json");
     const [alertMessage, setAlertMessage] = useState("");
     const [generatePython, setGeneratePython] = useState(false)
     const [hideCode, setHideCode] = useState(false)
