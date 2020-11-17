@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import "./Home.css";
-import {Alert, Button, ButtonGroup, Card, Col, Container, Dropdown, DropdownButton, Row, Form, Spinner} from "react-bootstrap";
+import {Alert, Button, ButtonGroup, Card, Col, Container, Dropdown, DropdownButton, Row, Form, Spinner, InputGroup} from "react-bootstrap";
 import ManimEditor from "../../components/Editor/Editor";
 import FileSelector from "../../components/FileSelector/FileSelector";
 import * as monaco from 'monaco-editor-core';
@@ -28,6 +28,7 @@ const Home: React.FC = () => {
     const [hideCode, setHideCode] = useState(false)
     const [quality, setQuality] = useState("low")
     const [loadingSubmission, setLoadingSubmission] = useState(false)
+    const [outputFilename, setOutputFilename] = useState("myAnim")
     const [boundary, setBoundary] = useState<Boundaries>({})
     const [pageNumber, setPageNumber] = useState(0);
     const [showSuccess, setShowSuccess] = useState(false)
@@ -91,7 +92,7 @@ const Home: React.FC = () => {
             parsedStylesheet.positions = boundaryManager.computeManimCoordinates(boundary)
             stylesheetLatest = JSON.stringify(parsedStylesheet)
         }
-        let response = await apiService.compileCode(getManiMDSLText() || "", stylesheetLatest || "{}", "myAnim", generatePython, quality)
+        let response = await apiService.compileCode(getManiMDSLText() || "", stylesheetLatest || "{}", outputFilename, generatePython, quality)
         if (!response.success) {
             setAlertMessage(response.message)
         }
@@ -281,6 +282,16 @@ const Home: React.FC = () => {
                                 checked={quality === "high"}
                                 onChange={() => setQuality("high")}
                             />
+                            <hr />
+                            Output File Name:
+                            <InputGroup size="sm">
+                                <Form.Control
+                                    placeholder="myAnim"
+                                    onChange={e => setOutputFilename(e.target.value === "" ? "myAnim" : e.target.value)}/>
+                                <InputGroup.Append>
+                                    <InputGroup.Text>.mp4</InputGroup.Text>
+                                </InputGroup.Append>
+                            </InputGroup>
                         </Card.Body>
                     </Card>
                 </Col>
