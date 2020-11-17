@@ -116,8 +116,12 @@ const Home: React.FC = () => {
     async function getBoundaries() {
         setLoadingSubmission(true)
         let response = await apiService.getBoundaries(getManiMDSLText() || "", getStyleSheetText() || "{}")
-        setComputedBoundary(response.data)
-        setStage(1);
+        if(response.success) {
+            setComputedBoundary(response.data)
+            setStage(1);
+        } else {
+            setAlertMessage(response.message)
+        }
         setLoadingSubmission(false)
     }
 
