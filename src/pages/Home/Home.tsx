@@ -42,7 +42,6 @@ const Home: React.FC = () => {
     const [quality, setQuality] = useState("low")
     const [loadingSubmission, setLoadingSubmission] = useState(false)
     const [outputFilename, setOutputFilename] = useState("myAnim")
-    const [boundary, setBoundary] = useState<Boundaries>({})
     const [computedBoundary, setComputedBoundary] = useState<Boundaries>({})
     const [stage, setStage] = useState(0);
     const [showSuccess, setShowSuccess] = useState(false)
@@ -98,7 +97,8 @@ const Home: React.FC = () => {
         setFileType(flag)
     }
 
-    async function submitCode() {
+    async function submitCode(boundary: Boundaries) {
+        setStage(0)
         setLoadingSubmission(true)
         let stylesheetLatest = getStyleSheetText()
         if (boundary !== {} && stage === 1) {
@@ -178,7 +178,7 @@ const Home: React.FC = () => {
             return (
                 <ButtonGroup style={{float: "right", marginTop: "10px"}}>
                     <DropdownButton as={ButtonGroup} title="Submit" id="bg-nested-dropdown">
-                        <Dropdown.Item onClick={submitCode} eventKey="1">Compile!</Dropdown.Item>
+                        <Dropdown.Item onClick={() => submitCode({})} eventKey="1">Compile!</Dropdown.Item>
                         <Dropdown.Item onClick={getBoundaries} eventKey="2">Compile with Advanced
                             Options</Dropdown.Item>
                     </DropdownButton>
@@ -202,7 +202,7 @@ const Home: React.FC = () => {
         }])
     }
 
-    function saveBoundaries(save: boolean) {
+    function saveBoundaries(boundary: Boundaries, save: boolean) {
         if (save) {
             let stylesheetLatest = getStyleSheetText()
             if (boundary !== {} && stage === 1) {
@@ -271,10 +271,8 @@ const Home: React.FC = () => {
                     </div>
                     <div style={{width: "100%", margin: "0 auto"}}>
                         {stage === 1 &&
-                        <PlacementManger width={700} height={400} showModal={stage === 1} hideModal={saveBoundaries}
-                                         initialState={boundaryManager.getRectangleBoundary(computedBoundary)}
-                                         setBoundary={setBoundary}/>}
-                        {/*<Button style={{float: "right"}} onClick={submitCode}>Compile!</Button>*/}
+                        <PlacementManger width={700} height={400} showModal={stage === 1} hideModal={saveBoundaries} submitCode={submitCode}
+                                         initialState={boundaryManager.getRectangleBoundary(computedBoundary)}/>}
                     </div>
                 </Col>
                 <Col md={2}>

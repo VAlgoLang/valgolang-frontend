@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import interact from "interactjs";
 import "./PlacementManager.css";
 import {Boundaries} from "../../utils/BoundaryManager";
@@ -9,19 +9,14 @@ interface PlacementMangerProps {
     width: number,
     height: number,
     initialState: Boundaries,
-    setBoundary: (boundary: Boundaries) => void;
     showModal: boolean;
-    hideModal: (save: boolean) => void;
+    hideModal: (boundary: Boundaries, save: boolean) => void;
+    submitCode: (boundary: Boundaries) => void;
 }
 
-const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initialState, setBoundary, showModal, hideModal}) => {
+const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initialState, showModal, hideModal, submitCode}) => {
 
     const [position, setPosition] = useState<Boundaries>(initialState)
-
-    useEffect(() => {
-        setBoundary(position)
-        // eslint-disable-next-line
-    }, [position])
 
     interact('.resize-drag')
         .resizable({
@@ -89,7 +84,7 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initial
 
 
     return (
-        <Modal show={showModal} onHide={() => hideModal(false)} size={"lg"}>
+        <Modal show={showModal} onHide={() => hideModal(position, false)} size={"lg"}>
             <Modal.Header closeButton>
                 <Modal.Title>Place Data Structures</Modal.Title>
             </Modal.Header>
@@ -109,7 +104,8 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initial
                 </div>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="primary" onClick={() => hideModal(true)}>
+                <Button style={{float: "right"}} onClick={() => submitCode(position)}>Save and Compile!</Button>
+                <Button variant="primary" onClick={() => hideModal(position, true)}>
                     Save Changes
                 </Button>
             </Modal.Footer>
