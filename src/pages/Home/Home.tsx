@@ -41,7 +41,7 @@ const Home: React.FC = () => {
     const [hideCode, setHideCode] = useState(false)
     const [quality, setQuality] = useState("low")
     const [loadingSubmission, setLoadingSubmission] = useState(false)
-    const [outputFilename, setOutputFilename] = useState("myAnim")
+    const [outputFilename, setOutputFilename] = useState("animation")
     const [computedBoundary, setComputedBoundary] = useState<Boundaries>({})
     const [stage, setStage] = useState(0);
     const [showSuccess, setShowSuccess] = useState(false)
