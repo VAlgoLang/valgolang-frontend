@@ -113,9 +113,11 @@ const Home: React.FC = () => {
     }
 
     async function getBoundaries() {
+        setLoadingSubmission(true)
         let response = await apiService.getBoundaries(getManiMDSLText() || "", getStyleSheetText() || "{}")
         setBoundary(response.data)
         setPageNumber(1);
+        setLoadingSubmission(false)
     }
 
     async function validateCode() {
