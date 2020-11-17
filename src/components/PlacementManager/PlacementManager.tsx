@@ -1,25 +1,23 @@
 import React, {useEffect, useState} from "react";
 import interact from "interactjs";
 import "./PlacementManager.css";
-import {Button} from "react-bootstrap";
+import {Boundaries} from "../../utils/BoundaryManager";
 
-export type Coordinate = { x: number, y: number, width: number, height: number }
 
 interface PlacementMangerProps {
     width: number,
     height: number,
-    initialState: { [key: string]: Coordinate },
-    setBoundary: (boundary: { [key: string]: Coordinate }) => void;
+    initialState: Boundaries,
+    setBoundary: (boundary: Boundaries) => void;
 }
 
 const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initialState, setBoundary}) => {
 
-    let manimWidth = 14
-    let manimHeight = 8
-    const [position, setPosition] = useState<{ [key: string]: Coordinate }>(initialState)
+    const [position, setPosition] = useState<Boundaries>(initialState)
 
     useEffect(() => {
         setBoundary(position)
+        // eslint-disable-next-line
     }, [position])
 
     interact('.resize-drag')

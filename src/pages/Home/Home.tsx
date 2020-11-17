@@ -5,7 +5,8 @@ import ManimEditor from "../../components/Editor/Editor";
 import FileSelector from "../../components/FileSelector/FileSelector";
 import * as monaco from 'monaco-editor-core';
 import {apiService} from "../../index";
-import PlacementManger, {Coordinate} from "../../components/PlacementManager/PlacementManager";
+import PlacementManger from "../../components/PlacementManager/PlacementManager";
+import BoundaryManager, {Boundaries} from "../../utils/BoundaryManager";
 
 export enum FileType {
     STYLESHEET,
@@ -14,10 +15,7 @@ export enum FileType {
 
 
 const Home: React.FC = () => {
-    let height = 400
-    let width = 700
-    let manimWidth = 14
-    let manimHeight = 8
+
     const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor>()
     const [currentFileType, setFileType] = useState<FileType>(FileType.MANIMDSLCODE);
     const [manimDSL, setManimDSL] = useState<string>();
@@ -25,8 +23,10 @@ const Home: React.FC = () => {
     const [manimFileName, setManimFileName] = useState<string>("code.manimdsl");
     const [stylesheetFileName, setStylesheetFileName] = useState<string>("test.json");
     const [alertMessage, setAlertMessage] = useState("");
-    const [boundary, setBoundary] = useState<{ [key: string]: Coordinate }>({})
+    const [boundary, setBoundary] = useState<Boundaries>({})
     const [pageNumber, setPageNumber] = useState(0);
+
+    const boundaryManager = new BoundaryManager(700, 400)
 
     async function filePickerChange(e: React.ChangeEvent<HTMLInputElement>) {
         let files = e.target.files!;
@@ -48,7 +48,6 @@ const Home: React.FC = () => {
         }
     }
 
-
     function switchFileType(flag: FileType) {
         if (flag === currentFileType) {
             return;
@@ -67,7 +66,7 @@ const Home: React.FC = () => {
         let stylesheetLatest = getStyleSheetText()
         if(boundary !== {}) {
             let parsedStylesheet = JSON.parse(stylesheetLatest || "{}")
-            parsedStylesheet.positions = computeManimCoordinates(boundary)
+            parsedStylesheet.positions = boundaryManager.computeManimCoordinates(boundary)
             stylesheetLatest = JSON.stringify(parsedStylesheet)
         }
         let response = await apiService.compileCode(getManiMDSLText() || "", stylesheetLatest || "{}", "myAnim", false)
@@ -98,60 +97,6 @@ const Home: React.FC = () => {
         } else {
             return manimDSL
         }
-    }
-
-    function computeManimCoordinates(position: any) {
-        let currPosition : {[key: string]: Coordinate} = {}
-        Object.keys(position).forEach(shapeName => {
-            let shape = position[shapeName]
-            let coordinates = {x: 0, y: 0, width: 0, height: 0}
-            let heightScaleFactor = manimHeight / height;
-            let widthScaleFactor = manimWidth / width;
-
-            coordinates.height = shape.height * heightScaleFactor
-            coordinates.width = shape.width * widthScaleFactor
-
-            // Calculations broken down on purpose to make it easier to follow
-
-            // Normalise to manim width
-            coordinates.x = shape.x * widthScaleFactor
-            // Move x relative to manim origin
-            coordinates.x -= manimWidth / 2
-
-            // Normalise to manim height
-            coordinates.y = shape.y * heightScaleFactor
-            // Move y relative to manim origin
-            coordinates.y = (coordinates.y * -1) + manimHeight / 2
-            // Move y to coordinate to ll from ul
-            coordinates.y -= coordinates.height
-
-            // Fix to 1 decimal place
-            coordinates.y = parseFloat(coordinates.y.toFixed(1))
-            coordinates.x = parseFloat(coordinates.x.toFixed(1))
-            coordinates.width = parseFloat(coordinates.width.toFixed(1))
-            coordinates.height = parseFloat(coordinates.height.toFixed(1))
-            currPosition[shapeName] =  coordinates
-        })
-        return currPosition
-    }
-
-
-    function getRectangleBoundary(position: any): { [key: string]: Coordinate } {
-
-        let positionNew: { [key: string]: Coordinate } = {};
-        Object.keys(position).forEach(shapePosition => {
-            let shape = position[shapePosition]
-            let coordinate = {width: 0, height: 0, x: 0, y: 0}
-            coordinate.width  = (shape.width / manimWidth) * width
-            coordinate.height  = (height / manimHeight) * shape.height
-            coordinate.x = shape.x + (manimWidth / 2)
-            coordinate.x = coordinate.x * (width / manimWidth)
-            coordinate.y = ((-shape.y) + 4)
-            coordinate.y = coordinate.y * (height/ manimHeight)
-            coordinate.y -= coordinate.height
-            positionNew[shapePosition] = coordinate
-        })
-        return positionNew
     }
 
     return (
@@ -193,7 +138,7 @@ const Home: React.FC = () => {
                     }
                     {pageNumber === 1 &&
                         <div style={{width: "100%", margin: "0 auto"}}>
-                            <PlacementManger width={700} height={400} initialState={getRectangleBoundary(boundary)} setBoundary={setBoundary}/>
+                            <PlacementManger width={700} height={400} initialState={boundaryManager.getRectangleBoundary(boundary)} setBoundary={setBoundary}/>
                         </div>
                     }
                     <ButtonGroup style={{float: "right", marginTop: "10px"}}>
