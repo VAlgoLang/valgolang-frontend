@@ -65,6 +65,7 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initial
             inertia: true,
             listeners: {
                 move(event) {
+
                     let new_x = position[event.target.id].x + event.dx
                     let new_y = position[event.target.id].y + event.dy
                     position[event.target.id].x = new_x;

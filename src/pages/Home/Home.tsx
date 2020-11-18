@@ -21,6 +21,7 @@ import {apiService} from "../../index";
 import PlacementManger from "../../components/PlacementManager/PlacementManager";
 import BoundaryManager, {Boundaries} from "../../utils/BoundaryManager";
 import {downloadFile, downloadZip} from "../../utils/FileDownloader";
+import JSZip from "jszip";
 
 export enum FileType {
     STYLESHEET,
@@ -79,6 +80,26 @@ const Home: React.FC = () => {
                 setStylesheetFileName(file.name)
                 editor?.setValue(text)
                 setFileType(FileType.STYLESHEET)
+            } else if (file.name.endsWith(".zip")) {
+                const jsZip = new JSZip();
+                let text = await file.arrayBuffer();
+                jsZip.loadAsync(text).then(zip => {
+                    Object.keys(zip.files).forEach(function (filename) {
+                        zip.files[filename].async('string').then(function (fileData) {
+                            if (filename.endsWith(".manimdsl")) {
+                                setManimDSL(fileData)
+                                setManimFileName(filename)
+                                editor?.setValue(fileData)
+                                setFileType(FileType.MANIMDSLCODE)
+                            } else if (filename.endsWith(".json")) {
+                                setStylesheet(fileData)
+                                setStylesheetFileName(filename)
+                                editor?.setValue(fileData)
+                                setFileType(FileType.STYLESHEET)
+                            }
+                        })
+                    })
+                });
             }
         }
     }
