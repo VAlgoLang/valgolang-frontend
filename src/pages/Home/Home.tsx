@@ -9,7 +9,7 @@ import BoundaryManager, {Boundaries} from "../../utils/BoundaryManager";
 import {downloadFile, downloadZip} from "../../utils/FileDownloader";
 import JSZip from "jszip";
 import {editor as monacoEditor} from "monaco-editor";
-import { SnakeGame } from "react-game-snake";
+import GameModal from "../../components/GameModal/GameModal";
 
 export enum FileType {
     STYLESHEET,
@@ -252,21 +252,7 @@ const Home: React.FC = () => {
                 </div> : <></>
             }
             {loadingSubmission ?
-                <div id="loadingOverlay">
-                    <SnakeGame
-                        colors={{
-                            field: "#bdc3c7",
-                            food: "#9b59b6",
-                            snake: "#3498db",
-                        }}
-                        countOfHorizontalFields={20}
-                        countOfVerticalFields={20}
-                        fieldSize={20}
-                        loopTime={200}
-                        pauseAllowed={true}
-                        restartAllowed={true}
-                    />
-                </div> : <></>
+                <GameModal/>: <></>
             }
             <Row md={12}>
                 <h1 style={{textAlign: "center", margin: "0 auto", padding: "20px"}}>ManimDSL Online Editor</h1>
