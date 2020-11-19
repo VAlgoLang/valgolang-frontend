@@ -1,5 +1,6 @@
-import {languages} from "monaco-editor-core";
 /* eslint-disable */
+import {languages} from "monaco-editor";
+
 export const monarchLanguage = {
     // the default separators except `@$`
     wordPattern: /(-?\d*\.\d\w*)|([^`~!#%^&*()\-=+\[{\]}\\|;:'",.<>\/?\s]+)/g,

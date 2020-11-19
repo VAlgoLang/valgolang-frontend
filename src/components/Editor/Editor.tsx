@@ -1,35 +1,36 @@
 import {Card} from "react-bootstrap";
-import React, {CSSProperties, useEffect, useRef} from "react";
-import * as monaco from 'monaco-editor-core';
+import React, {CSSProperties, useEffect} from "react";
 import {FileType} from "../../pages/Home/Home";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faDownload} from "@fortawesome/free-solid-svg-icons";
+import Editor, {monaco} from '@monaco-editor/react';
+import {languageExtensionPoint, languageID} from "../../language/config";
+import {language, monarchLanguage} from "../../language/ManimDSL";
 
 interface ManimEditorProps {
     manimDSLName: string;
     styleSheetName: string;
-    language: string;
-    setParentEditor: (s: monaco.editor.IStandaloneCodeEditor) => void;
+    setParentEditor: (s: any) => void;
     setFileType: (fileType: FileType) => void;
     downloadFile: (fileType: FileType) => void;
     currentFileType: FileType;
     downloadProject: () => void;
 }
 
-const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, language, setParentEditor, setFileType, currentFileType, downloadFile, downloadProject}) => {
-
-    const assignRef = useRef<HTMLDivElement>(null)
+const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, setParentEditor, setFileType, currentFileType, downloadFile, downloadProject}) => {
 
     useEffect(() => {
-        const editor = monaco.editor.create(assignRef.current!, {
-            theme: "vs-dark",
-            language: language,
-            autoIndent: "full",
-            fontSize: 16
-        });
-        setParentEditor(editor)
-        // eslint-disable-next-line
-    }, [language])
+        monaco
+            .init()
+            .then(monaco => {
+                monaco.languages.register(languageExtensionPoint);
+                monaco.languages.onLanguage(languageID, () => {
+                    monaco.languages.setLanguageConfiguration(languageID, monarchLanguage);
+                    monaco.languages.setMonarchTokensProvider(languageID, language);
+                });
+            })
+            .catch(error => console.error('An error occurred during initialization of Monaco: ', error));
+    }, [])
 
     function getStylingForTab(fileType: FileType): CSSProperties {
         if (fileType === currentFileType) {
@@ -70,11 +71,13 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                 </span>
                 <span style={{float: "right", cursor: "pointer"}}>
                     <FontAwesomeIcon onClick={downloadProject}
-                         style={{color: "white", marginRight: "10px"}}
-                         icon={faDownload}/>
+                                     style={{color: "white", marginRight: "10px"}}
+                                     icon={faDownload}/>
                 </span>
             </div>
-            <div ref={assignRef} style={{height: '70vh'}}/>
+            <Editor language={"manimDSL"} theme="dark" height={"70vh"}
+                    editorDidMount={(_, editor) => setParentEditor(editor)}/>
+
         </Card>
     )
 }

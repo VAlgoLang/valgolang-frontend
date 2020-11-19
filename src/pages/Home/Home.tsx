@@ -16,12 +16,12 @@ import {
 } from "react-bootstrap";
 import ManimEditor from "../../components/Editor/Editor";
 import FileSelector from "../../components/FileSelector/FileSelector";
-import * as monaco from 'monaco-editor-core';
 import {apiService} from "../../index";
 import PlacementManger from "../../components/PlacementManager/PlacementManager";
 import BoundaryManager, {Boundaries} from "../../utils/BoundaryManager";
 import {downloadFile, downloadZip} from "../../utils/FileDownloader";
 import JSZip from "jszip";
+import {editor as monacoEditor} from "monaco-editor";
 
 export enum FileType {
     STYLESHEET,
@@ -31,7 +31,7 @@ export enum FileType {
 
 const Home: React.FC = () => {
 
-    const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor>()
+    const [editor, setEditor] = useState<monacoEditor.IStandaloneCodeEditor>()
     const [currentFileType, setFileType] = useState<FileType>(FileType.MANIMDSLCODE);
     const [manimDSL, setManimDSL] = useState<string>();
     const [stylesheet, setStylesheet] = useState<string>();
@@ -274,7 +274,7 @@ const Home: React.FC = () => {
                 </Col>
                 <Col md={6}>
                     <div>
-                        <ManimEditor downloadFile={downloadFileType} language="manimDSL"
+                        <ManimEditor downloadFile={downloadFileType}
                                      currentFileType={currentFileType} manimDSLName={manimFileName}
                                      styleSheetName={stylesheetFileName}
                                      setParentEditor={(e) => setEditor(e)} setFileType={switchFileType}

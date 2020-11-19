@@ -1,7 +1,6 @@
-import * as monaco from "monaco-editor-core";
 
 export const languageID = "manimDSL";
 
-export const languageExtensionPoint: monaco.languages.ILanguageExtensionPoint = {
+export const languageExtensionPoint = {
     id: languageID,
 }
