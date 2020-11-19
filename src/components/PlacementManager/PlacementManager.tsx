@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import interact from "interactjs";
 import "./PlacementManager.css";
 import {Boundaries} from "../../utils/BoundaryManager";
@@ -9,14 +9,26 @@ interface PlacementMangerProps {
     width: number,
     height: number,
     initialState: Boundaries,
+    autoState: Boundaries,
     showModal: boolean;
     hideModal: (boundary: Boundaries, save: boolean) => void;
     submitCode: (boundary: Boundaries) => void;
 }
 
-const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initialState, showModal, hideModal, submitCode}) => {
+const PlacementManger: React.FC<PlacementMangerProps> = ({ width, height, initialState, autoState, showModal, hideModal, submitCode}) => {
 
-    const [position, setPosition] = useState<Boundaries>(initialState)
+    const [position, setPosition] = useState<Boundaries>({})
+    const [refresh, setRefresh] = useState(true)
+
+    useEffect(() => {
+        if (!refresh) {
+            setRefresh(true)
+        }
+    }, [refresh])
+
+    useEffect(() => {
+        setPosition(JSON.parse(JSON.stringify(initialState)))
+    }, [initialState])
 
     interact('.resize-drag')
         .resizable({
@@ -83,6 +95,15 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initial
             ]
         })
 
+    function resetPosition() {
+        setPosition(JSON.parse(JSON.stringify(initialState)))
+        setRefresh(false)
+    }
+
+    function setAutoPostion() {
+        setPosition(JSON.parse(JSON.stringify(autoState)))
+        setRefresh(false)
+    }
 
     return (
         <Modal show={showModal} onHide={() => hideModal(position, false)} size={"lg"}>
@@ -92,23 +113,23 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initial
             <Modal.Body>
                 <div style={{height: height + "px", width: width + "px", margin: "0 auto"}}>
                     <div className="placementContainer">
-                        {Object.keys(initialState).map((shape, index) => {
-                            return <div key={index} id={shape} style={{
-                                transform: `translate(${position[shape].x}px, ${position[shape].y}px)`,
-                                height: position[shape].height,
-                                width: position[shape].width
+                        {refresh && Object.entries(position).map((shape, index) => {
+                            return <div key={index} id={shape[0]} style={{
+                                transform: `translate(${shape[1].x}px, ${shape[1].y}px)`,
+                                height: shape[1].height,
+                                width: shape[1].width
                             }} className="resize-drag">
-                                {shape}
+                                {shape[0]}
                             </div>
                         })}
                     </div>
                 </div>
             </Modal.Body>
             <Modal.Footer>
-                <Button style={{float: "right"}} onClick={() => submitCode(position)}>Save and Compile!</Button>
-                <Button variant="primary" onClick={() => hideModal(position, true)}>
-                    Save Changes
-                </Button>
+                <Button variant="info" onClick={() => setAutoPostion()}>Auto-calculate</Button>
+                <Button variant="secondary" onClick={() => resetPosition()}>Reset</Button>
+                <Button variant="primary" onClick={() => submitCode(position)}>Save and Compile!</Button>
+                <Button variant="primary" onClick={() => hideModal(position, true)}>Save Changes</Button>
             </Modal.Footer>
         </Modal>
     )

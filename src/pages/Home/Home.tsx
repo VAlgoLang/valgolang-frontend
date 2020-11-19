@@ -1,19 +1,6 @@
 import React, {useEffect, useState} from "react";
 import "./Home.css";
-import {
-    Alert,
-    Button,
-    ButtonGroup,
-    Card,
-    Col,
-    Container,
-    Dropdown,
-    DropdownButton,
-    Form,
-    InputGroup,
-    Row,
-    Spinner
-} from "react-bootstrap";
+import {Alert, Button, Card, Col, Container, Form, InputGroup, Row, Spinner} from "react-bootstrap";
 import ManimEditor from "../../components/Editor/Editor";
 import FileSelector from "../../components/FileSelector/FileSelector";
 import {apiService} from "../../index";
@@ -43,8 +30,10 @@ const Home: React.FC = () => {
     const [hideCode, setHideCode] = useState(false)
     const [quality, setQuality] = useState("low")
     const [loadingSubmission, setLoadingSubmission] = useState(false)
+    const [loadingCalculation, setLoadingCalculation] = useState(false)
     const [outputFilename, setOutputFilename] = useState("animation")
     const [computedBoundary, setComputedBoundary] = useState<Boundaries>({})
+    const [autoBoundary, setAutoBoundary] = useState<Boundaries>({})
     const [stage, setStage] = useState(0);
     const [showSuccess, setShowSuccess] = useState(false)
     const boundaryManager = new BoundaryManager(700, 400)
@@ -136,15 +125,17 @@ const Home: React.FC = () => {
     }
 
     async function getBoundaries() {
-        setLoadingSubmission(true)
+        setLoadingCalculation(true)
         let response = await apiService.getBoundaries(getManiMDSLText() || "", getStyleSheetText() || "{}")
         if(response.success) {
-            setComputedBoundary(response.data)
+            setAutoBoundary(boundaryManager.getRectangleBoundary(response.data.auto))
+            let initial = Object.keys(response.data.stylesheet).length === 0 ? response.data.auto : response.data.stylesheet
+            setComputedBoundary(boundaryManager.getRectangleBoundary(initial))
             setStage(1);
         } else {
             setAlertMessage(response.message)
         }
-        setLoadingSubmission(false)
+        setLoadingCalculation(false)
     }
 
     async function validateCode() {
@@ -183,32 +174,36 @@ const Home: React.FC = () => {
         }
     }
 
-    function renderSubmitButton() {
+    function renderCompileButton() {
         if (loadingSubmission) {
             return (
-                <ButtonGroup style={{float: "right", marginTop: "10px"}}>
-                    <Button disabled>
-                        <Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            role="status"
-                            aria-hidden="true"
-                            style={{marginRight: "5px"}}
-                        />
-                        Compiling
-                    </Button>
-                </ButtonGroup>
+                <Button style={{ float: "right", marginTop: "10px" }} disabled>
+                    <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true"
+                             style={{marginRight: "5px"}}/>
+                    Compiling...
+                </Button>
             )
         } else {
             return (
-                <ButtonGroup style={{float: "right", marginTop: "10px"}}>
-                    <DropdownButton as={ButtonGroup} title="Submit" id="bg-nested-dropdown">
-                        <Dropdown.Item onClick={() => submitCode({})} eventKey="1">Compile!</Dropdown.Item>
-                        <Dropdown.Item onClick={getBoundaries} eventKey="2">Compile with Advanced
-                            Options</Dropdown.Item>
-                    </DropdownButton>
-                </ButtonGroup>
+                <Button style={{float: "right", marginTop: "10px"}}
+                        onClick={() => submitCode({})}>Compile!</Button>
+            )
+        }
+    }
+
+    function renderPlaceButton() {
+        if (loadingCalculation) {
+            return (
+                <Button style={{ float: "right", marginTop: "10px" }} variant="info" disabled>
+                    <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true"
+                        style={{ marginRight: "5px" }} />
+                    Calculating...
+                </Button>
+            )
+        } else {
+            return (
+                <Button style={{ float: "right", marginTop: "10px" }} variant="info"
+                        onClick={() => getBoundaries()}>Place variables</Button>
             )
         }
     }
@@ -245,8 +240,15 @@ const Home: React.FC = () => {
 
     return (
         <Container fluid>
-            {loadingSubmission ?
+            {loadingSubmission || loadingCalculation ?
                 <div id="loadingOverlay">
+                    {/*<Spinner*/}
+                    {/*    as="span"*/}
+                    {/*    animation="border"*/}
+                    {/*    role="status"*/}
+                    {/*    aria-hidden="true"*/}
+                    {/*    variant="primary"*/}
+                    {/*/>*/}
                     <SnakeGame
                         colors={{
                             field: "#bdc3c7",
@@ -297,14 +299,15 @@ const Home: React.FC = () => {
                                dismissible>
                             All good!
                         </Alert>}
-                        {renderSubmitButton()}
+                        {renderCompileButton()}
                         <Button style={{float: "right", margin: "10px"}} variant="success"
                                 onClick={validateCode}>Validate</Button>
+                        {renderPlaceButton()}
                     </div>
                     <div style={{width: "100%", margin: "0 auto"}}>
                         {stage === 1 &&
                         <PlacementManger width={700} height={400} showModal={stage === 1} hideModal={saveBoundaries} submitCode={submitCode}
-                                         initialState={boundaryManager.getRectangleBoundary(computedBoundary)}/>}
+                                         initialState={computedBoundary} autoState={autoBoundary}/>}
                     </div>
                 </Col>
                 <Col md={2}>
@@ -319,30 +322,12 @@ const Home: React.FC = () => {
                                         label={"Hide code in animation"}/>
                             <hr/>
                             Video Quality:
-                            <Form.Check
-                                type="radio"
-                                label="Low quality"
-                                name="qualityRadios"
-                                value="low"
-                                checked={quality === "low"}
-                                onChange={() => setQuality("low")}
-                            />
-                            <Form.Check
-                                type="radio"
-                                label="Medium quality"
-                                name="qualityRadios"
-                                value="medium"
-                                checked={quality === "medium"}
-                                onChange={() => setQuality("medium")}
-                            />
-                            <Form.Check
-                                type="radio"
-                                label="High quality"
-                                name="qualityRadios"
-                                value="high"
-                                checked={quality === "high"}
-                                onChange={() => setQuality("high")}
-                            />
+                            <Form.Check type="radio" label="Low quality" name="qualityRadios" value="low"
+                                        checked={quality === "low"} onChange={() => setQuality("low")}/>
+                            <Form.Check type="radio" label="Medium quality" name="qualityRadios" value="medium"
+                                        checked={quality === "medium"} onChange={() => setQuality("medium")}/>
+                            <Form.Check type="radio" label="High quality" name="qualityRadios" value="high"
+                                        checked={quality === "high"} onChange={() => setQuality("high")}/>
                             <hr/>
                             Output File Name:
                             <InputGroup size="sm">
