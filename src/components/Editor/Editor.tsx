@@ -75,7 +75,7 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                                      icon={faDownload}/>
                 </span>
             </div>
-            <Editor language={"manimDSL"} theme="dark" height={"70vh"}
+            <Editor language={"manimDSL"} theme="dark" height={"70vh"} options={{fontSize: 16}}
                     editorDidMount={(_, editor) => setParentEditor(editor)}/>
 
         </Card>
