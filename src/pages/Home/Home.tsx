@@ -22,6 +22,7 @@ import BoundaryManager, {Boundaries} from "../../utils/BoundaryManager";
 import {downloadFile, downloadZip} from "../../utils/FileDownloader";
 import JSZip from "jszip";
 import {editor as monacoEditor} from "monaco-editor";
+import { SnakeGame } from "react-game-snake";
 
 export enum FileType {
     STYLESHEET,
@@ -246,12 +247,18 @@ const Home: React.FC = () => {
         <Container fluid>
             {loadingSubmission ?
                 <div id="loadingOverlay">
-                    <Spinner
-                        as="span"
-                        animation="border"
-                        role="status"
-                        aria-hidden="true"
-                        variant="primary"
+                    <SnakeGame
+                        colors={{
+                            field: "#bdc3c7",
+                            food: "#9b59b6",
+                            snake: "#3498db",
+                        }}
+                        countOfHorizontalFields={20}
+                        countOfVerticalFields={20}
+                        fieldSize={20}
+                        loopTime={200}
+                        pauseAllowed={true}
+                        restartAllowed={true}
                     />
                 </div> : <></>
             }
