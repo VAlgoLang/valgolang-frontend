@@ -240,15 +240,19 @@ const Home: React.FC = () => {
 
     return (
         <Container fluid>
-            {loadingSubmission || loadingCalculation ?
+            { loadingCalculation ?
                 <div id="loadingOverlay">
-                    {/*<Spinner*/}
-                    {/*    as="span"*/}
-                    {/*    animation="border"*/}
-                    {/*    role="status"*/}
-                    {/*    aria-hidden="true"*/}
-                    {/*    variant="primary"*/}
-                    {/*/>*/}
+                    <Spinner
+                        as="span"
+                        animation="border"
+                        role="status"
+                        aria-hidden="true"
+                        variant="primary"
+                    />
+                </div> : <></>
+            }
+            {loadingSubmission ?
+                <div id="loadingOverlay">
                     <SnakeGame
                         colors={{
                             field: "#bdc3c7",
