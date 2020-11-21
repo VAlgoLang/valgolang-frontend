@@ -19,8 +19,8 @@ interface ManimEditorProps {
 }
 
 const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, setParentEditor, setFileType, currentFileType, downloadFile, downloadProject}) => {
-
     let monacoInstance: Monaco
+
     useEffect(() => {
         monaco
             .init()
@@ -82,8 +82,10 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
             <Editor language={"manimDSL"} theme="dark" height={"70vh"} options={{fontSize: 16}}
                     editorDidMount={(_, editor) => {
                         editor.onDidChangeModelContent((e) => {
-                            let code = editor.getValue()
-                            if(currentFileType === FileType.MANIMDSLCODE) {
+                            let isManimTab = sessionStorage.getItem("currentFileType") === "1"
+                            if(isManimTab) {
+                                let code = editor.getValue()
+
                                 let syntaxErrors = new ManimLanguageService().validate(code);
                                 let monacoErrors = [];
                                 for (let e of syntaxErrors) {
@@ -100,7 +102,13 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                                 if (model) {
                                     monacoInstance?.editor.setModelMarkers(model, "owner", monacoErrors);
                                 }
+                            } else {
+                                let model = monacoInstance?.editor.getModels()[0];
+                                if (model) {
+                                    monacoInstance?.editor.setModelMarkers(model, "owner", []);
+                                }
                             }
+
                         })
                         setParentEditor(editor)
                     }}/>

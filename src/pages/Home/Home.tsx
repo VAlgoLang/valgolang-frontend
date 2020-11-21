@@ -95,6 +95,8 @@ const Home: React.FC = () => {
     }
 
     function switchFileType(flag: FileType) {
+        // TODO: Find better way than session storage
+        sessionStorage.setItem("currentFileType", flag.toString())
         if (flag === currentFileType) {
             return;
         }
