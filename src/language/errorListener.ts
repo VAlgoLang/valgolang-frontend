@@ -10,7 +10,7 @@ export interface ManimDSLError {
     code: string;
 }
 
-export default class TodoLangErrorListener implements ANTLRErrorListener<any>{
+export default class ManimErrorListener implements ANTLRErrorListener<any>{
     private errors: ManimDSLError[] = []
     syntaxError(recognizer: Recognizer<any, any>, offendingSymbol: any, line: number, charPositionInLine: number, message: string, e: RecognitionException | undefined): void {
 

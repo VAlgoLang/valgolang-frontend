@@ -87,9 +87,10 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                             if (isManimTab) {
                                 let code = editor.getValue()
 
-                                let syntaxErrors = new ManimLanguageService().validate(code);
+                                let {ast, errors} = new ManimLanguageService().parse(code);
+                                console.log(ast)
                                 let monacoErrors = [];
-                                for (let e of syntaxErrors) {
+                                for (let e of errors) {
                                     monacoErrors.push({
                                         startLineNumber: e.startLineNumber,
                                         startColumn: e.startColumn,
