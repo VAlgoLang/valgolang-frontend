@@ -82,8 +82,9 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
             <Editor language={"manimDSL"} theme="dark" height={"70vh"} options={{fontSize: 16}}
                     editorDidMount={(_, editor) => {
                         editor.onDidChangeModelContent((e) => {
+                            // TODO: Find better way than session storage for currentFileType
                             let isManimTab = sessionStorage.getItem("currentFileType") === "1"
-                            if(isManimTab) {
+                            if (isManimTab) {
                                 let code = editor.getValue()
 
                                 let syntaxErrors = new ManimLanguageService().validate(code);
