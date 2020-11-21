@@ -33,7 +33,7 @@
   "scripts": {
     "start": "react-scripts start",
     "antlr4ts": "antlr4ts ./src/antlr/ManimParser.g4 ./src/antlr/ManimLexer.g4 ",
-    "build": "npm run antlr4ts && react-scripts build",
+    "build": "./antlrBuild.sh && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build"
