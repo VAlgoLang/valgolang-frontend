@@ -9,6 +9,7 @@ const GameModal: React.FC = () => {
                 <Modal.Title>This might take a while...</Modal.Title>
             </Modal.Header>
             <Modal.Body style={{textAlign: "center"}}>
+                <p>Your video is being generated...</p>
                 <SnakeGame
                     colors={{
                         field: "#bdc3c7",

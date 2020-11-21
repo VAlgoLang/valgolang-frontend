@@ -38,7 +38,7 @@ export const monarchLanguage = {
 
 export const language = {
     defaultToken: '',
-    tokenPostfix: '.kt',
+    tokenPostfix: '.manimdsl',
 
     keywords: [
         'number',

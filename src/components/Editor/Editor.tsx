@@ -3,9 +3,10 @@ import React, {CSSProperties, useEffect} from "react";
 import {FileType} from "../../pages/Home/Home";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faDownload} from "@fortawesome/free-solid-svg-icons";
-import Editor, {monaco} from '@monaco-editor/react';
+import Editor, {Monaco, monaco} from '@monaco-editor/react';
 import {languageExtensionPoint, languageID} from "../../language/config";
 import {language, monarchLanguage} from "../../language/ManimDSL";
+import ManimLanguageService from "../../language/language-service";
 
 interface ManimEditorProps {
     manimDSLName: string;
@@ -19,15 +20,18 @@ interface ManimEditorProps {
 
 const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, setParentEditor, setFileType, currentFileType, downloadFile, downloadProject}) => {
 
+    let monacoInstance: Monaco
     useEffect(() => {
         monaco
             .init()
-            .then(monaco => {
-                monaco.languages.register(languageExtensionPoint);
-                monaco.languages.onLanguage(languageID, () => {
-                    monaco.languages.setLanguageConfiguration(languageID, monarchLanguage);
-                    monaco.languages.setMonarchTokensProvider(languageID, language);
+            .then(monacoI => {
+                monacoI.languages.register(languageExtensionPoint);
+                monacoI.languages.onLanguage(languageID, () => {
+                    monacoI.languages.setLanguageConfiguration(languageID, monarchLanguage);
+                    monacoI.languages.setMonarchTokensProvider(languageID, language);
                 });
+                // eslint-disable-next-line
+                monacoInstance = monacoI
             })
             .catch(error => console.error('An error occurred during initialization of Monaco: ', error));
     }, [])
@@ -76,7 +80,28 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                 </span>
             </div>
             <Editor language={"manimDSL"} theme="dark" height={"70vh"} options={{fontSize: 16}}
-                    editorDidMount={(_, editor) => setParentEditor(editor)}/>
+                    editorDidMount={(_, editor) => {
+                        editor.onDidChangeModelContent((e) => {
+                            let code = editor.getValue()
+                            let syntaxErrors = new ManimLanguageService().validate(code);
+                            let monacoErrors = [];
+                            for (let e of syntaxErrors) {
+                                monacoErrors.push({
+                                    startLineNumber: e.startLineNumber,
+                                    startColumn: e.startColumn,
+                                    endLineNumber: e.endLineNumber,
+                                    endColumn: e.endColumn,
+                                    message: e.message,
+                                    severity: monacoInstance!!.MarkerSeverity.Error
+                                });
+                            }
+                            let model = monacoInstance?.editor.getModels()[0];
+                            if (model) {
+                                monacoInstance?.editor.setModelMarkers(model, "owner", monacoErrors);
+                            }
+                        })
+                        setParentEditor(editor)
+                    }}/>
 
         </Card>
     )

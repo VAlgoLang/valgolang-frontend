@@ -14,6 +14,7 @@
     "@types/react-bootstrap": "^0.32.22",
     "@types/react-dom": "^16.9.8",
     "@types/react-router-dom": "^5.1.5",
+    "antlr4ts": "^0.5.0-alpha.3",
     "axios": "^0.19.2",
     "bootstrap": "^4.5.2",
     "form-data": "^3.0.0",
@@ -31,13 +32,11 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "antlr4ts": "antlr4ts ./src/antlr/ManimParser.g4 ./src/antlr/ManimLexer.g4 ",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
   },
   "browserslist": {
     "production": [
@@ -52,6 +51,7 @@
     ]
   },
   "devDependencies": {
-    "@interactjs/types": "^1.10.0"
+    "@interactjs/types": "^1.10.0",
+    "antlr4ts-cli": "^0.5.0-alpha.3"
   }
 }
