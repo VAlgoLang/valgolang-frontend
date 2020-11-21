@@ -83,21 +83,23 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                     editorDidMount={(_, editor) => {
                         editor.onDidChangeModelContent((e) => {
                             let code = editor.getValue()
-                            let syntaxErrors = new ManimLanguageService().validate(code);
-                            let monacoErrors = [];
-                            for (let e of syntaxErrors) {
-                                monacoErrors.push({
-                                    startLineNumber: e.startLineNumber,
-                                    startColumn: e.startColumn,
-                                    endLineNumber: e.endLineNumber,
-                                    endColumn: e.endColumn,
-                                    message: e.message,
-                                    severity: monacoInstance!!.MarkerSeverity.Error
-                                });
-                            }
-                            let model = monacoInstance?.editor.getModels()[0];
-                            if (model) {
-                                monacoInstance?.editor.setModelMarkers(model, "owner", monacoErrors);
+                            if(currentFileType === FileType.MANIMDSLCODE) {
+                                let syntaxErrors = new ManimLanguageService().validate(code);
+                                let monacoErrors = [];
+                                for (let e of syntaxErrors) {
+                                    monacoErrors.push({
+                                        startLineNumber: e.startLineNumber,
+                                        startColumn: e.startColumn,
+                                        endLineNumber: e.endLineNumber,
+                                        endColumn: e.endColumn,
+                                        message: e.message,
+                                        severity: monacoInstance!!.MarkerSeverity.Error
+                                    });
+                                }
+                                let model = monacoInstance?.editor.getModels()[0];
+                                if (model) {
+                                    monacoInstance?.editor.setModelMarkers(model, "owner", monacoErrors);
+                                }
                             }
                         })
                         setParentEditor(editor)
