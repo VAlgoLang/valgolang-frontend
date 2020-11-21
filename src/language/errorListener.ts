@@ -19,9 +19,9 @@ export default class ManimErrorListener implements ANTLRErrorListener<any>{
                 startLineNumber:line,
                 endLineNumber: line,
                 startColumn: charPositionInLine,
-                endColumn: charPositionInLine+1,//Let's suppose the length of the error is only 1 char for simplicity
+                endColumn: (offendingSymbol ? (offendingSymbol?.endIndex || charPositionInLine + 1) : charPositionInLine + 1),
                 message,
-                code: "1" // This the error code you can customize them as you want
+                code: "1"
             }
         )
     }
