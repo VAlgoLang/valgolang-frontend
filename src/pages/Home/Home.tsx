@@ -10,6 +10,7 @@ import {downloadFile, downloadZip} from "../../utils/FileDownloader";
 import JSZip from "jszip";
 import {editor as monacoEditor} from "monaco-editor";
 import GameModal from "../../components/GameModal/GameModal";
+import LoadingOverlay from "../../components/LoadingOverlay/LoadingOverlay";
 
 export enum FileType {
     STYLESHEET,
@@ -54,6 +55,28 @@ const Home: React.FC = () => {
         }
     }, [alertMessage])
 
+    async function handleZipUpload(file: File) {
+        const jsZip = new JSZip();
+        let text = await file.arrayBuffer();
+        jsZip.loadAsync(text).then(zip => {
+            Object.keys(zip.files).forEach(function (filename) {
+                zip.files[filename].async('string').then(function (fileData) {
+                    if (filename.endsWith(".manimdsl")) {
+                        setManimDSL(fileData)
+                        setManimFileName(filename)
+                        editor?.setValue(fileData)
+                        setFileType(FileType.MANIMDSLCODE)
+                    } else if (filename.endsWith(".json")) {
+                        setStylesheet(fileData)
+                        setStylesheetFileName(filename)
+                        editor?.setValue(fileData)
+                        setFileType(FileType.STYLESHEET)
+                    }
+                })
+            })
+        });
+    }
+
     async function filePickerChange(e: React.ChangeEvent<HTMLInputElement>) {
         let files = e.target.files!;
         for (let i = 0; i < files.length; i++) {
@@ -71,25 +94,7 @@ const Home: React.FC = () => {
                 editor?.setValue(text)
                 setFileType(FileType.STYLESHEET)
             } else if (file.name.endsWith(".zip")) {
-                const jsZip = new JSZip();
-                let text = await file.arrayBuffer();
-                jsZip.loadAsync(text).then(zip => {
-                    Object.keys(zip.files).forEach(function (filename) {
-                        zip.files[filename].async('string').then(function (fileData) {
-                            if (filename.endsWith(".manimdsl")) {
-                                setManimDSL(fileData)
-                                setManimFileName(filename)
-                                editor?.setValue(fileData)
-                                setFileType(FileType.MANIMDSLCODE)
-                            } else if (filename.endsWith(".json")) {
-                                setStylesheet(fileData)
-                                setStylesheetFileName(filename)
-                                editor?.setValue(fileData)
-                                setFileType(FileType.STYLESHEET)
-                            }
-                        })
-                    })
-                });
+                await handleZipUpload(file);
             }
         }
     }
@@ -129,7 +134,7 @@ const Home: React.FC = () => {
     async function getBoundaries() {
         setLoadingCalculation(true)
         let response = await apiService.getBoundaries(getManiMDSLText() || "", getStyleSheetText() || "{}")
-        if(response.success) {
+        if (response.success) {
             setAutoBoundary(boundaryManager.getRectangleBoundary(response.data.auto))
             let initial = Object.keys(response.data.stylesheet).length === 0 ? response.data.auto : response.data.stylesheet
             setComputedBoundary(boundaryManager.getRectangleBoundary(initial))
@@ -179,7 +184,7 @@ const Home: React.FC = () => {
     function renderCompileButton() {
         if (loadingSubmission) {
             return (
-                <Button style={{ float: "right", marginTop: "10px" }} disabled>
+                <Button style={{float: "right", marginTop: "10px"}} disabled>
                     <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true"
                              style={{marginRight: "5px"}}/>
                     Compiling...
@@ -196,15 +201,15 @@ const Home: React.FC = () => {
     function renderPlaceButton() {
         if (loadingCalculation) {
             return (
-                <Button style={{ float: "right", marginTop: "10px" }} variant="info" disabled>
+                <Button style={{float: "right", marginTop: "10px"}} variant="info" disabled>
                     <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true"
-                        style={{ marginRight: "5px" }} />
+                             style={{marginRight: "5px"}}/>
                     Calculating...
                 </Button>
             )
         } else {
             return (
-                <Button style={{ float: "right", marginTop: "10px" }} variant="info"
+                <Button style={{float: "right", marginTop: "10px"}} variant="info"
                         onClick={() => getBoundaries()}>Place variables</Button>
             )
         }
@@ -242,20 +247,8 @@ const Home: React.FC = () => {
 
     return (
         <Container fluid>
-            { loadingCalculation ?
-                <div id="loadingOverlay">
-                    <Spinner
-                        as="span"
-                        animation="border"
-                        role="status"
-                        aria-hidden="true"
-                        variant="primary"
-                    />
-                </div> : <></>
-            }
-            {loadingSubmission ?
-                <GameModal/>: <></>
-            }
+            {loadingCalculation && <LoadingOverlay/>}
+            {loadingSubmission && <GameModal/>}
             <Row md={12}>
                 <h1 style={{textAlign: "center", margin: "0 auto", padding: "20px"}}>ManimDSL Online Editor</h1>
             </Row>
@@ -298,7 +291,8 @@ const Home: React.FC = () => {
                     </div>
                     <div style={{width: "100%", margin: "0 auto"}}>
                         {stage === 1 &&
-                        <PlacementManger width={700} height={400} showModal={stage === 1} hideModal={saveBoundaries} submitCode={submitCode}
+                        <PlacementManger width={700} height={400} showModal={stage === 1} hideModal={saveBoundaries}
+                                         submitCode={submitCode}
                                          initialState={computedBoundary} autoState={autoBoundary}/>}
                     </div>
                 </Col>
@@ -308,6 +302,7 @@ const Home: React.FC = () => {
                             Compiling Options
                         </Card.Header>
                         <Card.Body>
+                            {/*TODO: Extract into component*/}
                             <Form.Check name={"Generate Python"} onChange={() => setGeneratePython(!generatePython)}
                                         label={"Generate Python file"}/>
                             <Form.Check name={"Generate Python"} onChange={() => updateHideCode(!hideCode)}
