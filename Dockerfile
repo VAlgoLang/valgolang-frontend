@@ -1,4 +1,4 @@
-FROM node
+FROM timbru31/java-node
 
 COPY . /web/
 WORKDIR /web
