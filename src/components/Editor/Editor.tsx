@@ -39,6 +39,8 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
             .catch(error => console.error('An error occurred during initialization of Monaco: ', error));
     }, [])
 
+    let ids:any[] = [];
+
     function onEditorMount(monacoEditor: editor.IStandaloneCodeEditor) {
         monacoEditor.onDidChangeModelContent((e) => {
             // TODO: Find better way than session storage for currentFileType
@@ -55,8 +57,7 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                         options: {isWholeLine: true, linesDecorationsClassName: 'myLineDecoration'}
                     }
                 })
-
-                monacoEditor.deltaDecorations([], x);
+                ids = monacoEditor.deltaDecorations(ids, x);
                 let monacoErrors = [];
                 for (let e of errors) {
                     monacoErrors.push({
