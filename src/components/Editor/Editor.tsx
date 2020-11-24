@@ -1,13 +1,13 @@
 import {Card} from "react-bootstrap";
-import React, {CSSProperties, useEffect} from "react";
+import React, {CSSProperties, Provider, useEffect} from "react";
 import {FileType} from "../../pages/Home/Home";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faDownload} from "@fortawesome/free-solid-svg-icons";
 import Editor, {Monaco, monaco} from '@monaco-editor/react';
 import {languageExtensionPoint, languageID} from "../../language/config";
 import {language, monarchLanguage} from "../../language/ManimDSL";
-import ManimLanguageService from "../../language/language-service";
-import {editor, Range} from "monaco-editor";
+import ManimLanguageService, {Annotations, annotationStrings} from "../../language/language-service";
+import {editor, IDisposable, Range} from "monaco-editor";
 import "./Editor.css"
 
 interface ManimEditorProps {
@@ -22,6 +22,7 @@ interface ManimEditorProps {
 
 const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, setParentEditor, setFileType, currentFileType, downloadFile, downloadProject}) => {
     let monacoInstance: Monaco
+    let codeLensProvider: IDisposable | null;
 
     useEffect(() => {
         monaco
@@ -44,13 +45,14 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
     function onEditorMount(monacoEditor: editor.IStandaloneCodeEditor) {
         monacoEditor.onDidChangeModelContent((e) => {
             // TODO: Find better way than session storage for currentFileType
-            let isManimTab = (sessionStorage.getItem("currentFileType") || "1" )=== "1"
+            let isManimTab = (sessionStorage.getItem("currentFileType") || "1") === "1"
             if (isManimTab) {
                 let code = monacoEditor.getValue()
 
                 let languageService = new ManimLanguageService();
                 let {ast, errors} = languageService.parse(code);
-                let annotations = languageService.walkAST(ast)
+                let annotations = languageService.walkAST(ast);
+                console.log(annotations)
                 let x = annotations.map(annotation => {
                     return {
                         range: new Range(annotation.startLine, 1, annotation.endLine, 1),
@@ -58,6 +60,13 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                     }
                 })
                 ids = monacoEditor.deltaDecorations(ids, x);
+                if(annotations.length == 0 && codeLensProvider) {
+                    codeLensProvider.dispose()
+                    codeLensProvider = null;
+                } else {
+                    addCodeLens(annotations)
+                }
+
                 let monacoErrors = [];
                 for (let e of errors) {
                     monacoErrors.push({
@@ -82,6 +91,37 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
 
         })
         setParentEditor(monacoEditor)
+    }
+
+    function addCodeLens(annotation: Annotations[]) {
+        let lenses = annotation.map(annotation => {
+            return {
+                range: {
+                    startLineNumber: annotation.startLine,
+                    startColumn: 1,
+                    endLineNumber: annotation.endLine,
+                    endColumn: 1
+                },
+                id: annotation.type.toString(),
+                command: {
+                    id: '0,',
+                    title: annotationStrings.get(annotation.type)!! + " : " + annotation.arguments
+                }
+            }
+        });
+        codeLensProvider?.dispose()
+        codeLensProvider = monacoInstance.languages.registerCodeLensProvider(languageID, {
+            provideCodeLenses: function (model, token) {
+                return {
+                    lenses: lenses,
+                    dispose: () => {
+                    }
+                };
+            },
+            resolveCodeLens: function (model, codeLens, token) {
+                return codeLens;
+            }
+        })
     }
 
     function getStylingForTab(fileType: FileType): CSSProperties {

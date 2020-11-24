@@ -1,4 +1,11 @@
-import {AnimationSpeedUpContext, ManimParser, ProgramContext} from "../antlr/ManimParser";
+import {
+    AnimationSpeedUpAnnotationContext,
+    CodeTrackingAnnotationContext,
+    ManimParser,
+    ProgramContext,
+    SubtitleAnnotationContext
+} from "../antlr/ManimParser";
+
 import {ANTLRInputStream, CommonTokenStream} from "antlr4ts";
 import {ManimLexer} from "../antlr/ManimLexer";
 import ManimErrorListener, {ManimDSLError} from "./errorListener";
@@ -41,6 +48,7 @@ export default class ManimLanguageService {
         return errors;
     }
 }
+
 enum AnnotationType {
     SUBTITLE,
     SPEED,
@@ -48,13 +56,21 @@ enum AnnotationType {
     STEPOVER
 }
 
-interface Annotations {
+export const annotationStrings: Map<AnnotationType, string> = new Map([
+    [AnnotationType.SUBTITLE, "Subtitle"],
+    [AnnotationType.SPEED, "Speed"],
+    [AnnotationType.STEPINTO, "Step Into"],
+    [AnnotationType.STEPOVER, "Step Over"],
+])
+
+export interface Annotations {
     startLine: number;
     endLine: number;
-    type: AnnotationType
+    type: AnnotationType;
+    arguments: String;
 }
 
-class ManimDSLVisitor extends AbstractParseTreeVisitor<any> implements ManimParserVisitor<any>{
+class ManimDSLVisitor extends AbstractParseTreeVisitor<any> implements ManimParserVisitor<any> {
 
     private annotations: Annotations[] = []
 
@@ -62,8 +78,55 @@ class ManimDSLVisitor extends AbstractParseTreeVisitor<any> implements ManimPars
         return 0;
     }
 
-    visitAnimationSpeedUp(ctx: AnimationSpeedUpContext): any {
-        this.annotations.push({startLine: ctx.start.line, endLine: ctx.stop?.line!!, type: AnnotationType.SPEED})
+    visitAnimationSpeedUpAnnotation(ctx: AnimationSpeedUpAnnotationContext): any {
+        let args = "";
+        if (ctx.arg_list()) {
+            args = ctx.arg_list()!!.text
+        }
+        this.annotations.push({
+            startLine: ctx.start.line,
+            endLine: ctx.stop?.line!!,
+            type: AnnotationType.SPEED,
+            arguments: args
+        })
+    }
+
+    visitCodeTrackingAnnotation(ctx: CodeTrackingAnnotationContext): any {
+        let args = "";
+        if (ctx._condition) {
+            args = ctx._condition!!.text
+        }
+
+        let type = ctx._step.text === "@stepInto" ? AnnotationType.STEPINTO : AnnotationType.STEPOVER
+
+        this.annotations.push({
+            startLine: ctx.start.line,
+            endLine: ctx.stop?.line!!,
+            type: type,
+            arguments: args
+        })
+    }
+
+    visitSubtitleAnnotation(ctx: SubtitleAnnotationContext) {
+        let args = ctx._show.text === "@subtitleOnce" ? "show once, " : "";
+
+        if (ctx.arg_list()) {
+            args += ctx.arg_list()!!.text
+        }
+
+        if (ctx._subtitle_text && ctx._subtitle_text.text !== "<missing STRING>") {
+            let text = ctx._subtitle_text.text!!.length > 30
+                ? ctx._subtitle_text.text!!.substring(0, 30) + "...\""
+                : ctx._subtitle_text.text
+            args += " " + text;
+        }
+
+        this.annotations.push({
+            startLine: ctx.start.line,
+            endLine: ctx.stop?.line!!,
+            type: AnnotationType.SUBTITLE,
+            arguments: args
+        })
     }
 
     getAnnotations() {
