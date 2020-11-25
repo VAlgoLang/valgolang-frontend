@@ -159,7 +159,7 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initial
                                             height: shape[1].height,
                                             width: shape[1].width
                                         }} className="resize-drag">
-                                            {shape[0]}
+                                            {shape[0].replace("_", "")}
                                         </div>
                                     }
                                 })}
@@ -174,9 +174,13 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initial
                             </Card.Header>
                             <Card.Body>
                                 {Object.keys(position).map((shapeID, index) => {
-                                    return <Form.Check type="checkbox" key={index} label={shapeID} name={shapeID}
-                                                       checked={isRendered(shapeID)}
-                                                       onChange={() => setIsRendered(shapeID, !isRendered(shapeID))}/>
+                                    if(shapeID.startsWith("_")) {
+                                        return <div key={index}/>
+                                    } else {
+                                        return <Form.Check type="checkbox" key={index} label={shapeID} name={shapeID}
+                                                           checked={isRendered(shapeID)}
+                                                           onChange={() => setIsRendered(shapeID, !isRendered(shapeID))}/>
+                                    }
                                 })}
                             </Card.Body>
                         </Card>

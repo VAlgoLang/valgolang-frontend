@@ -9,7 +9,7 @@ import {language, monarchLanguage} from "../../language/ManimDSL";
 import ManimLanguageService from "../../language/language-service";
 import {editor, Range} from "monaco-editor";
 import "./Editor.css"
-import {Menu, Item, contextMenu} from 'react-contexify';
+import {contextMenu, Item, Menu} from 'react-contexify';
 import 'react-contexify/dist/ReactContexify.min.css';
 import SubtitleModal from "../SubtitleModal/SubtitleModal";
 
@@ -46,19 +46,21 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
             .catch(error => console.error('An error occurred during initialization of Monaco: ', error));
     }, [])
 
-    let ids:any[] = [];
+    let ids: any[] = [];
 
     function onEditorMount(editorInstance: editor.IStandaloneCodeEditor) {
         setMonacoEditor(editorInstance)
         editorInstance.onContextMenu(function (e) {
-            setSubtitleLineNumber(e.target.position?.lineNumber!)
+            if (e.target.toString().startsWith("GUTTER_LINE_NUMBERS")) {
+                handleEvent(e.event.browserEvent)
+                setSubtitleLineNumber(e.target.position?.lineNumber!)
+            }
         });
         editorInstance.onDidChangeModelContent((e) => {
             // TODO: Find better way than session storage for currentFileType
-            let isManimTab = (sessionStorage.getItem("currentFileType") || "1" )=== "1"
+            let isManimTab = (sessionStorage.getItem("currentFileType") || "1") === "1"
             if (isManimTab) {
                 let code = editorInstance.getValue()
-
                 let languageService = new ManimLanguageService();
                 let {ast, errors} = languageService.parse(code);
                 let annotations = languageService.walkAST(ast)
@@ -118,8 +120,6 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
     }
 
     const handleEvent = (e: any) => {
-        e.preventDefault();
-        e.stopPropagation()
         contextMenu.show({
             id: "menu_id",
             event: e,
@@ -127,7 +127,7 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
         });
     };
 
-    function addSubtitle(newSubtitle: {condition: string | undefined, subtitle: string}) {
+    function addSubtitle(newSubtitle: { condition: string | undefined, subtitle: string }) {
         let currentValue = monacoEditor?.getValue() || ""
         let lines = currentValue.split("\n");
         let annotation = "@subtitle";
@@ -159,14 +159,15 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                                      icon={faDownload}/>
                 </span>
             </div>
-            <div onContextMenu={handleEvent}>
+            <div>
                 <Editor language={"manimDSL"} height={"70vh"} theme={"dark"} options={{fontSize: 16}}
-                    editorDidMount={(_, editor) => onEditorMount(editor)}/>
+                        editorDidMount={(_, editor) => onEditorMount(editor)}/>
             </div>
             <Menu id='menu_id'>
                 <Item onClick={() => setShowSubtitleModal(true)}>Add Subtitle</Item>
             </Menu>
-            <SubtitleModal showModal={showSubtitleModal} setSubtitleParent={addSubtitle} setModal={() => setShowSubtitleModal(false)}/>
+            <SubtitleModal showModal={showSubtitleModal} setSubtitleParent={addSubtitle}
+                           setModal={() => setShowSubtitleModal(false)}/>
         </Card>
     )
 }
