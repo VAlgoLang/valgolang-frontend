@@ -6,12 +6,13 @@ import {faDownload} from "@fortawesome/free-solid-svg-icons";
 import Editor, {Monaco, monaco} from '@monaco-editor/react';
 import {languageExtensionPoint, languageID} from "../../language/config";
 import {language, monarchLanguage} from "../../language/ManimDSL";
-import ManimLanguageService from "../../language/language-service";
+import ManimLanguageService, {AnnotationType} from "../../language/language-service";
 import {editor, Range} from "monaco-editor";
 import "./Editor.css"
 import {contextMenu, Item, Menu} from 'react-contexify';
 import 'react-contexify/dist/ReactContexify.min.css';
 import SubtitleModal from "../SubtitleModal/SubtitleModal";
+import GeneralAnnotationModal from "../GeneralAnnotationModal/GeneralAnnotationModal";
 
 interface ManimEditorProps {
     manimDSLName: string;
@@ -28,7 +29,9 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
 
     let [monacoEditor, setMonacoEditor] = useState<editor.IStandaloneCodeEditor>();
     let [showSubtitleModal, setShowSubtitleModal] = useState(false);
+    let [showAnnotationModal, setShowAnnotationModal] = useState(false);
     let [subtitleLineNumber, setSubtitleLineNumber] = useState(-1);
+    const [contextMenuSelection, setContextMenuSelection] = useState<{ start: number, end: number } | undefined>(undefined)
 
     useEffect(() => {
         monaco
@@ -48,12 +51,59 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
 
     let ids: any[] = [];
 
+
+    let  conditionSelection: any;
     function onEditorMount(editorInstance: editor.IStandaloneCodeEditor) {
         setMonacoEditor(editorInstance)
-        editorInstance.onContextMenu(function (e) {
+        conditionSelection = editorInstance.createContextKey('conditionSelection', false);
+        const contextmenu = editorInstance.getContribution('editor.contrib.contextmenu')
+        // @ts-ignore
+        const realMethod = contextmenu._onContextMenu;
+        // @ts-ignore
+        contextmenu._onContextMenu = function(e) {
+            let selection = editorInstance.getSelection();
+            if (selection && selection.startLineNumber !== selection.endLineNumber) {
+                conditionSelection.set(true)
+                setContextMenuSelection({start: selection.startLineNumber, end: selection.endLineNumber})
+            } else {
+                conditionSelection.set(false);
+            }
             if (e.target.toString().startsWith("GUTTER_LINE_NUMBERS")) {
                 handleEvent(e.event.browserEvent)
                 setSubtitleLineNumber(e.target.position?.lineNumber!)
+            }
+            realMethod.apply(contextmenu, arguments);
+        };
+        editorInstance.addAction({
+            id: 'add-subtitle',
+            label: 'Add Subtitle',
+
+            keybindings: [
+                monacoInstance.KeyMod.CtrlCmd | monacoInstance.KeyCode.F9,
+            ],
+
+            run: function (ed) {
+                setShowSubtitleModal(true)
+                return undefined;
+            }
+        });
+        editorInstance.addAction({
+            id: 'add-annotation',
+            label: 'Add Annotation',
+
+            keybindings: [
+                monacoInstance.KeyMod.CtrlCmd | monacoInstance.KeyCode.F10,
+            ],
+
+            // A rule to evaluate on top of the precondition in order to dispatch the keybindings.
+
+            contextMenuGroupId: 'navigation',
+
+            contextMenuOrder: 1.5,
+
+            run: function (ed) {
+                setShowAnnotationModal(true)
+                return undefined;
             }
         });
         editorInstance.onDidChangeModelContent((e) => {
@@ -120,6 +170,7 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
     }
 
     const handleEvent = (e: any) => {
+        e.preventDefault();
         contextMenu.show({
             id: "menu_id",
             event: e,
@@ -131,12 +182,25 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
         let currentValue = monacoEditor?.getValue() || ""
         let lines = currentValue.split("\n");
         let annotation = "@subtitle";
-        let condition = newSubtitle.condition ? `${newSubtitle.condition})` : ""
-        let subtitle = `${annotation}("${newSubtitle.subtitle}", ${condition})`
+        let condition = newSubtitle.condition ? `,${newSubtitle.condition})` : ""
+        let subtitle = `${annotation}("${newSubtitle.subtitle}"${condition})`
         lines.splice(subtitleLineNumber - 1, 0, subtitle);
         monacoEditor?.setValue(lines.join("\n"))
         setSubtitleLineNumber(-1);
         setShowSubtitleModal(false)
+    }
+
+    function addAnnotation(annotation: { condition: string | undefined, annotationType: AnnotationType, multiplier: string | undefined }) {
+        let currentValue = monacoEditor?.getValue() || ""
+        let lines = currentValue.split("\n");
+        let multiplier = annotation.multiplier ? annotation.multiplier + ", " : ""
+        let condition = annotation.condition ? `(${multiplier}${annotation.condition})` : ""
+        let annotationString = `${annotation.annotationType}${condition} {`
+        lines.splice((contextMenuSelection?.start || 0) - 1, 0, annotationString);
+        lines.splice((contextMenuSelection?.end || 0), 0, "}");
+        monacoEditor?.setValue(lines.join("\n"))
+        setContextMenuSelection(undefined)
+        setShowAnnotationModal(false)
     }
 
     return (
@@ -164,10 +228,13 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                         editorDidMount={(_, editor) => onEditorMount(editor)}/>
             </div>
             <Menu id='menu_id'>
+                {contextMenuSelection && <Item onClick={() => setShowAnnotationModal(true)}>Add Annotation</Item>}
                 <Item onClick={() => setShowSubtitleModal(true)}>Add Subtitle</Item>
             </Menu>
             <SubtitleModal showModal={showSubtitleModal} setSubtitleParent={addSubtitle}
                            setModal={() => setShowSubtitleModal(false)}/>
+            <GeneralAnnotationModal showModal={showAnnotationModal} setAnnotation={addAnnotation}
+                                    setModal={() => setShowAnnotationModal(false)}/>
         </Card>
     )
 }

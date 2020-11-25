@@ -41,11 +41,11 @@ export default class ManimLanguageService {
         return errors;
     }
 }
-enum AnnotationType {
-    SUBTITLE,
-    SPEED,
-    STEPINTO,
-    STEPOVER
+export enum AnnotationType {
+    SUBTITLE="@subtitle",
+    STEPINTO="@stepInto",
+    STEPOVER="@stepOver",
+    SPEED="@speed"
 }
 
 interface Annotations {
