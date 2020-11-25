@@ -28,8 +28,17 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initial
     }, [refresh])
 
     useEffect(() => {
-        setPosition(JSON.parse(JSON.stringify(initialState)))
-    }, [initialState])
+        let newInitalState = JSON.parse(JSON.stringify(initialState));
+        Object.keys(newInitalState).forEach(shapeId => {
+            if (newInitalState[shapeId].width === 0) {
+                hiddenShapes.add(shapeId)
+                newInitalState[shapeId] = autoState[shapeId]
+            }
+        })
+        setHiddenShapes(hiddenShapes)
+        setPosition(newInitalState)
+        // eslint-disable-next-line
+    }, [initialState, autoState])
 
     function removeHiddenFromBoundary() {
         let newPosition: Boundaries = {}
