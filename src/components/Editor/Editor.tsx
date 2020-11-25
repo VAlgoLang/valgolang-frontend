@@ -1,5 +1,5 @@
 import {Card} from "react-bootstrap";
-import React, {CSSProperties, useEffect} from "react";
+import React, {CSSProperties, useEffect, useState} from "react";
 import {FileType} from "../../pages/Home/Home";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faDownload} from "@fortawesome/free-solid-svg-icons";
@@ -9,6 +9,9 @@ import {language, monarchLanguage} from "../../language/ManimDSL";
 import ManimLanguageService from "../../language/language-service";
 import {editor, Range} from "monaco-editor";
 import "./Editor.css"
+import {Menu, Item, contextMenu} from 'react-contexify';
+import 'react-contexify/dist/ReactContexify.min.css';
+import SubtitleModal from "../SubtitleModal/SubtitleModal";
 
 interface ManimEditorProps {
     manimDSLName: string;
@@ -22,6 +25,10 @@ interface ManimEditorProps {
 
 const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, setParentEditor, setFileType, currentFileType, downloadFile, downloadProject}) => {
     let monacoInstance: Monaco
+
+    let [monacoEditor, setMonacoEditor] = useState<editor.IStandaloneCodeEditor>();
+    let [showSubtitleModal, setShowSubtitleModal] = useState(false);
+    let [subtitleLineNumber, setSubtitleLineNumber] = useState(-1);
 
     useEffect(() => {
         monaco
@@ -41,12 +48,16 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
 
     let ids:any[] = [];
 
-    function onEditorMount(monacoEditor: editor.IStandaloneCodeEditor) {
-        monacoEditor.onDidChangeModelContent((e) => {
+    function onEditorMount(editorInstance: editor.IStandaloneCodeEditor) {
+        setMonacoEditor(editorInstance)
+        editorInstance.onContextMenu(function (e) {
+            setSubtitleLineNumber(e.target.position?.lineNumber!)
+        });
+        editorInstance.onDidChangeModelContent((e) => {
             // TODO: Find better way than session storage for currentFileType
             let isManimTab = (sessionStorage.getItem("currentFileType") || "1" )=== "1"
             if (isManimTab) {
-                let code = monacoEditor.getValue()
+                let code = editorInstance.getValue()
 
                 let languageService = new ManimLanguageService();
                 let {ast, errors} = languageService.parse(code);
@@ -57,7 +68,7 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                         options: {isWholeLine: true, linesDecorationsClassName: 'myLineDecoration'}
                     }
                 })
-                ids = monacoEditor.deltaDecorations(ids, x);
+                ids = editorInstance.deltaDecorations(ids, x);
                 let monacoErrors = [];
                 for (let e of errors) {
                     monacoErrors.push({
@@ -81,7 +92,7 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
             }
 
         })
-        setParentEditor(monacoEditor)
+        setParentEditor(editorInstance)
     }
 
     function getStylingForTab(fileType: FileType): CSSProperties {
@@ -106,6 +117,28 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
         }
     }
 
+    const handleEvent = (e: any) => {
+        e.preventDefault();
+        e.stopPropagation()
+        contextMenu.show({
+            id: "menu_id",
+            event: e,
+            props: {}
+        });
+    };
+
+    function addSubtitle(newSubtitle: {condition: string | undefined, subtitle: string}) {
+        let currentValue = monacoEditor?.getValue() || ""
+        let lines = currentValue.split("\n");
+        let annotation = "@subtitle";
+        let condition = newSubtitle.condition ? `${newSubtitle.condition})` : ""
+        let subtitle = `${annotation}("${newSubtitle.subtitle}", ${condition})`
+        lines.splice(subtitleLineNumber - 1, 0, subtitle);
+        monacoEditor?.setValue(lines.join("\n"))
+        setSubtitleLineNumber(-1);
+        setShowSubtitleModal(false)
+    }
+
     return (
         <Card className="shadow" as="div" style={{background: "#252526"}}>
             <div style={{marginBottom: "8px", marginTop: "8px", backgroundColor: "#252526"}}>
@@ -126,9 +159,14 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                                      icon={faDownload}/>
                 </span>
             </div>
-            <Editor language={"manimDSL"} height={"70vh"} theme={"dark"} options={{fontSize: 16}}
+            <div onContextMenu={handleEvent}>
+                <Editor language={"manimDSL"} height={"70vh"} theme={"dark"} options={{fontSize: 16}}
                     editorDidMount={(_, editor) => onEditorMount(editor)}/>
-
+            </div>
+            <Menu id='menu_id'>
+                <Item onClick={() => setShowSubtitleModal(true)}>Add Subtitle</Item>
+            </Menu>
+            <SubtitleModal showModal={showSubtitleModal} setSubtitleParent={addSubtitle} setModal={() => setShowSubtitleModal(false)}/>
         </Card>
     )
 }

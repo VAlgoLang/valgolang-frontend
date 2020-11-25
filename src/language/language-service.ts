@@ -1,4 +1,4 @@
-import {AnimationSpeedUpContext, ManimParser, ProgramContext} from "../antlr/ManimParser";
+import {AnimationSpeedUpAnnotationContext, ManimParser, ProgramContext} from "../antlr/ManimParser";
 import {ANTLRInputStream, CommonTokenStream} from "antlr4ts";
 import {ManimLexer} from "../antlr/ManimLexer";
 import ManimErrorListener, {ManimDSLError} from "./errorListener";
@@ -62,7 +62,7 @@ class ManimDSLVisitor extends AbstractParseTreeVisitor<any> implements ManimPars
         return 0;
     }
 
-    visitAnimationSpeedUp(ctx: AnimationSpeedUpContext): any {
+    visitAnimationSpeedUp(ctx: AnimationSpeedUpAnnotationContext): any {
         this.annotations.push({startLine: ctx.start.line, endLine: ctx.stop?.line!!, type: AnnotationType.SPEED})
     }
 
