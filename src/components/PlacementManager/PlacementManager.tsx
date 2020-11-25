@@ -1,8 +1,8 @@
-import React, {useState, useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import interact from "interactjs";
 import "./PlacementManager.css";
 import {Boundaries} from "../../utils/BoundaryManager";
-import {Button, Modal} from "react-bootstrap";
+import {Button, Card, Col, Form, Modal, Row} from "react-bootstrap";
 
 
 interface PlacementMangerProps {
@@ -15,10 +15,11 @@ interface PlacementMangerProps {
     submitCode: (boundary: Boundaries) => void;
 }
 
-const PlacementManger: React.FC<PlacementMangerProps> = ({ width, height, initialState, autoState, showModal, hideModal, submitCode}) => {
+const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initialState, autoState, showModal, hideModal, submitCode}) => {
 
     const [position, setPosition] = useState<Boundaries>({})
     const [refresh, setRefresh] = useState(true)
+    const [hiddenShapes, setHiddenShapes] = useState(new Set<string>())
 
     useEffect(() => {
         if (!refresh) {
@@ -29,6 +30,19 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({ width, height, initia
     useEffect(() => {
         setPosition(JSON.parse(JSON.stringify(initialState)))
     }, [initialState])
+
+    function removeHiddenFromBoundary() {
+        let newPosition: Boundaries = {}
+        Object.keys(position).forEach(shapeId => {
+            let positionElement = position[shapeId];
+            newPosition[shapeId] = { x: positionElement.x, y: positionElement.y, width: positionElement.width, height: positionElement.height }
+            if (hiddenShapes.has(shapeId)) {
+                newPosition[shapeId].width = 0
+                newPosition[shapeId].height = 0
+            }
+        })
+        return newPosition
+    }
 
     interact('.resize-drag')
         .resizable({
@@ -96,6 +110,8 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({ width, height, initia
         })
 
     function resetPosition() {
+        hiddenShapes.clear()
+        setHiddenShapes(hiddenShapes)
         setPosition(JSON.parse(JSON.stringify(initialState)))
         setRefresh(false)
     }
@@ -105,31 +121,64 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({ width, height, initia
         setRefresh(false)
     }
 
+    function isRendered(shapeId: string) {
+        return !hiddenShapes.has(shapeId)
+    }
+
+    function setIsRendered(shapeId: string, flag: boolean) {
+        flag ? hiddenShapes.delete(shapeId) : hiddenShapes.add(shapeId)
+        setHiddenShapes(hiddenShapes)
+        setRefresh(false)
+    }
+
     return (
-        <Modal show={showModal} onHide={() => hideModal(position, false)} size={"lg"}>
+        <Modal show={showModal} onHide={() => hideModal(position, false)} size={"xl"}>
             <Modal.Header closeButton>
                 <Modal.Title>Place Data Structures</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <div style={{height: height + "px", width: width + "px", margin: "0 auto"}}>
-                    <div className="placementContainer">
-                        {refresh && Object.entries(position).map((shape, index) => {
-                            return <div key={index} id={shape[0]} style={{
-                                transform: `translate(${shape[1].x}px, ${shape[1].y}px)`,
-                                height: shape[1].height,
-                                width: shape[1].width
-                            }} className="resize-drag">
-                                {shape[0]}
+                <Row>
+                    <Col md={9}>
+                        <div style={{height: height + "px", width: width + "px", margin: "0 auto"}}>
+                            <div className="placementContainer">
+                                {refresh && Object.entries(position).map((shape, index) => {
+                                    if (hiddenShapes.has(shape[0])) {
+                                        return <div key={index}/>
+                                    } else {
+                                        return <div key={index} id={shape[0]} style={{
+                                            transform: `translate(${shape[1].x}px, ${shape[1].y}px)`,
+                                            height: shape[1].height,
+                                            width: shape[1].width
+                                        }} className="resize-drag">
+                                            {shape[0]}
+                                        </div>
+                                    }
+                                })}
                             </div>
-                        })}
-                    </div>
-                </div>
+                        </div>
+
+                    </Col>
+                    <Col md={3}>
+                        <Card style={{width: "100%"}}>
+                            <Card.Header>
+                                Hide Datastructures
+                            </Card.Header>
+                            <Card.Body>
+                                {Object.keys(position).map((shapeID, index) => {
+                                    return <Form.Check type="checkbox" key={index} label={shapeID} name={shapeID}
+                                                       checked={isRendered(shapeID)}
+                                                       onChange={() => setIsRendered(shapeID, !isRendered(shapeID))}/>
+                                })}
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="info" onClick={() => setAutoPostion()}>Auto-calculate</Button>
                 <Button variant="secondary" onClick={() => resetPosition()}>Reset</Button>
-                <Button variant="primary" onClick={() => submitCode(position)}>Save and Compile!</Button>
-                <Button variant="primary" onClick={() => hideModal(position, true)}>Save Changes</Button>
+                <Button variant="primary" onClick={() => submitCode(removeHiddenFromBoundary())}>Save and Compile!</Button>
+                <Button variant="primary" onClick={() => hideModal(removeHiddenFromBoundary(), true)}>Save Changes</Button>
             </Modal.Footer>
         </Modal>
     )
