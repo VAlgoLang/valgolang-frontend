@@ -11,7 +11,7 @@ import {editor, Range} from "monaco-editor";
 import "./Editor.css"
 import {contextMenu, Item, Menu} from 'react-contexify';
 import 'react-contexify/dist/ReactContexify.min.css';
-import SubtitleModal from "../SubtitleModal/SubtitleModal";
+import SubtitleModal, {SubtitleType} from "../SubtitleModal/SubtitleModal";
 import GeneralAnnotationModal from "../GeneralAnnotationModal/GeneralAnnotationModal";
 
 interface ManimEditorProps {
@@ -67,6 +67,7 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                 setContextMenuSelection({start: selection.startLineNumber, end: selection.endLineNumber})
             } else {
                 conditionSelection.set(false);
+                setContextMenuSelection(undefined)
             }
             if (e.target.toString().startsWith("GUTTER_LINE_NUMBERS")) {
                 handleEvent(e.event.browserEvent)
@@ -178,12 +179,15 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
         });
     };
 
-    function addSubtitle(newSubtitle: { condition: string | undefined, subtitle: string }) {
+    function addSubtitle(newSubtitle: { condition: string | undefined, subtitle: string, duration: string | undefined, type: SubtitleType}) {
         let currentValue = monacoEditor?.getValue() || ""
         let lines = currentValue.split("\n");
         let annotation = "@subtitle";
-        let condition = newSubtitle.condition ? `,${newSubtitle.condition})` : ""
+        if (newSubtitle.type === SubtitleType.ONCE) annotation += "Once"
+        let condition = newSubtitle.condition ? `,${newSubtitle.condition}` : ""
+        if (newSubtitle.duration) condition += `, ${newSubtitle.duration}`
         let subtitle = `${annotation}("${newSubtitle.subtitle}"${condition})`
+
         lines.splice(subtitleLineNumber - 1, 0, subtitle);
         monacoEditor?.setValue(lines.join("\n"))
         setSubtitleLineNumber(-1);
