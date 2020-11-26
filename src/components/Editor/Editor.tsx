@@ -117,7 +117,7 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                 let x = annotations.map(annotation => {
                     return {
                         range: new Range(annotation.startLine, 1, annotation.endLine, 1),
-                        options: {isWholeLine: true, linesDecorationsClassName: 'myLineDecoration'}
+                        options: {isWholeLine: true, linesDecorationsClassName: annotation.className}
                     }
                 })
                 ids = editorInstance.deltaDecorations(ids, x);
@@ -194,8 +194,11 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
         let currentValue = monacoEditor?.getValue() || ""
         let lines = currentValue.split("\n");
         let multiplier = annotation.multiplier ? annotation.multiplier + ", " : ""
-        let condition = annotation.condition ? `(${multiplier}${annotation.condition})` : ""
-        let annotationString = `${annotation.annotationType}${condition} {`
+        let brackets = annotation.condition ? `(${multiplier}${annotation.condition})` : ""
+        if(annotation.multiplier && brackets.length === 0) {
+            brackets = "(" + annotation.multiplier + ")"
+        }
+        let annotationString = `${annotation.annotationType}${brackets} {`
         lines.splice((contextMenuSelection?.start || 0) - 1, 0, annotationString);
         lines.splice((contextMenuSelection?.end || 0), 0, "}");
         monacoEditor?.setValue(lines.join("\n"))

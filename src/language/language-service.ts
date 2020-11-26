@@ -1,4 +1,9 @@
-import {AnimationSpeedUpAnnotationContext, ManimParser, ProgramContext} from "../antlr/ManimParser";
+import {
+    AnimationSpeedUpAnnotationContext,
+    CodeTrackingAnnotationContext,
+    ManimParser,
+    ProgramContext
+} from "../antlr/ManimParser";
 import {ANTLRInputStream, CommonTokenStream} from "antlr4ts";
 import {ManimLexer} from "../antlr/ManimLexer";
 import ManimErrorListener, {ManimDSLError} from "./errorListener";
@@ -51,10 +56,20 @@ export enum AnnotationType {
 interface Annotations {
     startLine: number;
     endLine: number;
-    type: AnnotationType
+    type: AnnotationType;
+    className: string;
 }
 
 class ManimDSLVisitor extends AbstractParseTreeVisitor<any> implements ManimParserVisitor<any>{
+
+    visitCodeTrackingAnnotation(ctx: CodeTrackingAnnotationContext): any {
+        if (ctx.STEP_INTO()) {
+            this.annotations.push({startLine: ctx.start.line, endLine: ctx.stop?.line!!, type: AnnotationType.SPEED, className: 'stepInDecoration'})
+        } else {
+            this.annotations.push({startLine: ctx.start.line, endLine: ctx.stop?.line!!, type: AnnotationType.SPEED, className: 'stepOverDecoration'})
+        }
+    }
+
 
     private annotations: Annotations[] = []
 
@@ -62,8 +77,8 @@ class ManimDSLVisitor extends AbstractParseTreeVisitor<any> implements ManimPars
         return 0;
     }
 
-    visitAnimationSpeedUp(ctx: AnimationSpeedUpAnnotationContext): any {
-        this.annotations.push({startLine: ctx.start.line, endLine: ctx.stop?.line!!, type: AnnotationType.SPEED})
+    visitAnimationSpeedUpAnnotation(ctx: AnimationSpeedUpAnnotationContext): any {
+        this.annotations.push({startLine: ctx.start.line, endLine: ctx.stop?.line!!, type: AnnotationType.SPEED, className: 'speedDecoration'})
     }
 
     getAnnotations() {

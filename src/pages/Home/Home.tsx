@@ -29,6 +29,7 @@ const Home: React.FC = () => {
     const [alertMessage, setAlertMessage] = useState("");
     const [generatePython, setGeneratePython] = useState(false)
     const [hideCode, setHideCode] = useState(false)
+    const [variableBlock, setVariableBlock] = useState(false)
     const [quality, setQuality] = useState("low")
     const [loadingSubmission, setLoadingSubmission] = useState(false)
     const [loadingCalculation, setLoadingCalculation] = useState(false)
@@ -181,6 +182,16 @@ const Home: React.FC = () => {
         }
     }
 
+    function updateHideVariableBlock(variableShow: boolean) {
+        setVariableBlock(variableShow)
+        let parsedJSON = JSON.parse(getStyleSheetText() || "{}")
+        parsedJSON.hideVariables = variableShow
+        setStylesheet(JSON.stringify(parsedJSON, null, 4))
+        if (currentFileType === FileType.STYLESHEET) {
+            editor?.setValue(JSON.stringify(parsedJSON, null, 4))
+        }
+    }
+
     function renderCompileButton() {
         if (loadingSubmission) {
             return (
@@ -305,8 +316,10 @@ const Home: React.FC = () => {
                             {/*TODO: Extract into component*/}
                             <Form.Check name={"Generate Python"} onChange={() => setGeneratePython(!generatePython)}
                                         label={"Generate Python file"}/>
+                            <Form.Check name={"Hide Variable Block"} onChange={() => updateHideVariableBlock(!variableBlock)}
+                                        label={"Hide variable block only"}/>
                             <Form.Check name={"Generate Python"} onChange={() => updateHideCode(!hideCode)}
-                                        label={"Hide code in animation"}/>
+                                        label={"Hide code and variable block"}/>
                             <hr/>
                             Video Quality:
                             <Form.Check type="radio" label="Low quality" name="qualityRadios" value="low"

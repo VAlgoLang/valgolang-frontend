@@ -1,5 +1,17 @@
-.myLineDecoration {
-    background: #38cb00;
+.speedDecoration {
+    background: #417295;
+    width: 5px !important;
+    margin-left: 3px;
+}
+
+.stepInDecoration {
+    background: #4ec9b0;
+    width: 5px !important;
+    margin-left: 3px;
+}
+
+.stepOverDecoration {
+    background: #328a73;
     width: 5px !important;
     margin-left: 3px;
 }
