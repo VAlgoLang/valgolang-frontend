@@ -239,7 +239,7 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                         editorDidMount={(_, editor) => onEditorMount(editor)}/>
             </div>
             <Menu id='menu_id'>
-                {contextMenuSelection && <Item onClick={() => setShowAnnotationModal(true)}>Add Annotation</Item>}
+                {/*{contextMenuSelection && <Item onClick={() => setShowAnnotationModal(true)}>Add Annotation</Item>}*/}
                 <Item onClick={() => setShowSubtitleModal(true)}>Add Subtitle</Item>
             </Menu>
             <SubtitleModal showModal={showSubtitleModal} setSubtitleParent={addSubtitle}
