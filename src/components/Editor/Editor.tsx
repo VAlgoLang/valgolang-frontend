@@ -62,7 +62,7 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
         // @ts-ignore
         contextmenu._onContextMenu = function(e) {
             let selection = editorInstance.getSelection();
-            if (selection && selection.startLineNumber !== selection.endLineNumber) {
+            if (selection) {
                 conditionSelection.set(true)
                 setContextMenuSelection({start: selection.startLineNumber, end: selection.endLineNumber})
             } else {
@@ -182,7 +182,9 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
     function addSubtitle(newSubtitle: { condition: string | undefined, subtitle: string, duration: string | undefined, type: SubtitleType}) {
         let currentValue = monacoEditor?.getValue() || ""
         let lines = currentValue.split("\n");
-        let annotation = "@subtitle";
+        let topLine = lines[subtitleLineNumber - 1];
+        let indexNonWhitespace = topLine.search(/\S/)
+        let annotation = new Array(indexNonWhitespace + 1).join(' ') + "@subtitle";
         if (newSubtitle.type === SubtitleType.ONCE) annotation += "Once"
         let condition = newSubtitle.condition ? `,${newSubtitle.condition}` : ""
         if (newSubtitle.duration) condition += `, ${newSubtitle.duration}`
@@ -202,9 +204,11 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
         if(annotation.multiplier && brackets.length === 0) {
             brackets = "(" + annotation.multiplier + ")"
         }
-        let annotationString = `${annotation.annotationType}${brackets} {`
+        let topLine = lines[contextMenuSelection?.start!! - 1];
+        let indexNonWhitespace = topLine.search(/\S/)
+        let annotationString = new Array(indexNonWhitespace + 1).join(' ') + `${annotation.annotationType}${brackets} {`
         lines.splice((contextMenuSelection?.start || 0) - 1, 0, annotationString);
-        lines.splice((contextMenuSelection?.end || 0) + 1, 0, "}");
+        lines.splice((contextMenuSelection?.end || 0) + 1, 0,  new Array(indexNonWhitespace + 1).join(' ') + "}");
         monacoEditor?.setValue(lines.join("\n"))
         setContextMenuSelection(undefined)
         setShowAnnotationModal(false)
