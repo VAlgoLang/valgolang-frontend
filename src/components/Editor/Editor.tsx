@@ -64,6 +64,8 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
             let selection = editorInstance.getSelection();
             if (selection && selection.startLineNumber !== selection.endLineNumber) {
                 conditionSelection.set(true)
+                console.log(selection.startLineNumber)
+                console.log(selection.endLineNumber)
                 setContextMenuSelection({start: selection.startLineNumber, end: selection.endLineNumber})
             } else {
                 conditionSelection.set(false);
@@ -204,7 +206,7 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
         }
         let annotationString = `${annotation.annotationType}${brackets} {`
         lines.splice((contextMenuSelection?.start || 0) - 1, 0, annotationString);
-        lines.splice((contextMenuSelection?.end || 0), 0, "}");
+        lines.splice((contextMenuSelection?.end || 0) + 1, 0, "}");
         monacoEditor?.setValue(lines.join("\n"))
         setContextMenuSelection(undefined)
         setShowAnnotationModal(false)
