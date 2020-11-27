@@ -7,7 +7,7 @@
 }
 
 .resize-drag {
-    border-radius: 8px;
+    border-radius: 5px;
     padding: 20px;
     background-color: #29e;
     color: white;
@@ -16,8 +16,14 @@
     touch-action: none;
     box-sizing: border-box;
     user-select: none;
-
+    border: 1px solid #207bbd;
     position: absolute;
     left:0;
     top:0;
+}
+
+.resize-drag-grey {
+    background-color: #3b3b3b !important;
+    border: 1px solid #242424;
+
 }

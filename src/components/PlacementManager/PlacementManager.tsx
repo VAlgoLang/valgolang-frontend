@@ -158,7 +158,7 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initial
                                             transform: `translate(${shape[1].x}px, ${shape[1].y}px)`,
                                             height: shape[1].height,
                                             width: shape[1].width
-                                        }} className="resize-drag">
+                                        }} className={"resize-drag " + (shape[0].startsWith("_") ? " resize-drag-grey" : "")}>
                                             {shape[0].replace("_", "")}
                                         </div>
                                     }
