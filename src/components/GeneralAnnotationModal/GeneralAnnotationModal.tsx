@@ -21,7 +21,6 @@ const GeneralAnnotationModal: React.FC<SubtitleModalProps> = ({showModal, setAnn
     const [annotationType, setAnnotationType] = useState<AnnotationType>(AnnotationType.STEPINTO)
 
     function submitModal() {
-        console.log(multiplier)
         if (annotationType === AnnotationType.SPEED && (!multiplier || multiplier.length === 0)) {
             alert("Make sure you include speed multiplier")
             return;

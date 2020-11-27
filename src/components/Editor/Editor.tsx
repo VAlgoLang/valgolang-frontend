@@ -64,8 +64,6 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
             let selection = editorInstance.getSelection();
             if (selection && selection.startLineNumber !== selection.endLineNumber) {
                 conditionSelection.set(true)
-                console.log(selection.startLineNumber)
-                console.log(selection.endLineNumber)
                 setContextMenuSelection({start: selection.startLineNumber, end: selection.endLineNumber})
             } else {
                 conditionSelection.set(false);
