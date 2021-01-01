@@ -25,9 +25,9 @@ interface ManimEditorProps {
 }
 
 const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, setParentEditor, setFileType, currentFileType, downloadFile, downloadProject}) => {
-    let monacoInstance: Monaco
 
     let [monacoEditor, setMonacoEditor] = useState<editor.IStandaloneCodeEditor>();
+    let [monacoInstance, setMonacoInstance] = useState<Monaco>();
     let [showSubtitleModal, setShowSubtitleModal] = useState(false);
     let [showAnnotationModal, setShowAnnotationModal] = useState(false);
     let [subtitleLineNumber, setSubtitleLineNumber] = useState(-1);
@@ -37,14 +37,13 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
         monaco
             .init()
             .then(monacoI => {
+                // eslint-disable-next-line
+                setMonacoInstance(monacoI)
                 monacoI.languages.register(languageExtensionPoint);
                 monacoI.languages.onLanguage(languageID, () => {
                     monacoI.languages.setLanguageConfiguration(languageID, monarchLanguage);
                     monacoI.languages.setMonarchTokensProvider(languageID, language);
                 });
-
-                // eslint-disable-next-line
-                monacoInstance = monacoI
             })
             .catch(error => console.error('An error occurred during initialization of Monaco: ', error));
     }, [])
@@ -80,7 +79,7 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
             label: 'Add Subtitle',
 
             keybindings: [
-                monacoInstance.KeyMod.CtrlCmd | monacoInstance.KeyCode.F9,
+                monacoInstance!!.KeyMod.CtrlCmd | monacoInstance!!.KeyCode.F9,
             ],
 
             run: function (ed) {
@@ -93,7 +92,7 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
             label: 'Add Annotation',
 
             keybindings: [
-                monacoInstance.KeyMod.CtrlCmd | monacoInstance.KeyCode.F10,
+                monacoInstance!!.KeyMod.CtrlCmd | monacoInstance!!.KeyCode.F10,
             ],
 
             // A rule to evaluate on top of the precondition in order to dispatch the keybindings.
@@ -235,8 +234,8 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                 </span>
             </div>
             <div>
-                <Editor language={"manimDSL"} height={"70vh"} theme={"dark"} options={{fontSize: 16}}
-                        editorDidMount={(_, editor) => onEditorMount(editor)}/>
+                {monacoInstance && <Editor language={"manimDSL"} height={"70vh"} theme={"dark"} options={{fontSize: 16}}
+                        editorDidMount={(_, editor) => onEditorMount(editor)}/>}
             </div>
             <Menu id='menu_id'>
                 {/*{contextMenuSelection && <Item onClick={() => setShowAnnotationModal(true)}>Add Annotation</Item>}*/}
