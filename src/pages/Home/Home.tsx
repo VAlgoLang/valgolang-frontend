@@ -11,6 +11,7 @@ import JSZip from "jszip";
 import {editor as monacoEditor} from "monaco-editor";
 import GameModal from "../../components/GameModal/GameModal";
 import LoadingOverlay from "../../components/LoadingOverlay/LoadingOverlay";
+import VideoModal, {VideoInfo} from "../../components/VideoModal/VideoModal";
 
 export enum FileType {
     STYLESHEET,
@@ -39,6 +40,8 @@ const Home: React.FC = () => {
     const [stage, setStage] = useState(0);
     const [showSuccess, setShowSuccess] = useState(false)
     const boundaryManager = new BoundaryManager(700, 400)
+    const [videoInfo, setVideoInfo] = useState<VideoInfo>()
+    const [videoModal, setVideoModal] = useState(false)
 
     useEffect(() => {
         if (showSuccess) {
@@ -126,6 +129,10 @@ const Home: React.FC = () => {
             stylesheetLatest = JSON.stringify(parsedStylesheet)
         }
         let response = await apiService.compileCode(getManiMDSLText() || "", stylesheetLatest || "{}", outputFilename, generatePython, quality)
+        if(response.file) {
+            setVideoModal(true)
+            setVideoInfo(response.data)
+        }
         if (!response.success) {
             setAlertMessage(response.message)
         }
@@ -260,8 +267,12 @@ const Home: React.FC = () => {
         <Container fluid>
             {loadingCalculation && <LoadingOverlay/>}
             {loadingSubmission && <GameModal/>}
+            <VideoModal videoInfo={videoInfo} isOpen={videoModal} closeModal={() => setVideoModal(false)}/>
             <Row md={12}>
                 <h1 style={{textAlign: "center", margin: "0 auto", padding: "20px"}}>ManimDSL Online Editor</h1>
+            </Row>
+            <Row md={12} style={{marginBottom: "20px"}}>
+                <a style={{margin: "0 auto"}} href={"https://manimdsl.github.io"} target={"_new"}>Documentation</a>
             </Row>
             <Row>
                 <Col md={1}>

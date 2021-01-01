@@ -35,14 +35,16 @@ export class APIService {
                 let text = await blob.text()
                 return JSON.parse(text) as APIResponse
             } else {
-                const url = window.URL.createObjectURL(new Blob([res.data]));
-                const link = document.createElement('a');
-                link.href = url;
                 let extension = res.headers["content-type"].split("/")[1]
-                link.setAttribute('download', (fileName || 'out')  + "." + extension);
-                document.body.appendChild(link);
-                link.click();
-                return {success: true, file: true, data: res.data} as APIResponse
+                if((res.headers["content-type"] as string).includes("application/zip")) {
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(new Blob([res.data]));
+                    link.setAttribute('download', (fileName || 'out') + "." + extension);
+                    document.body.appendChild(link);
+                    link.click();
+                    return {success: true, file: false, data: {data: res.data, extension: extension, fileName: fileName}} as APIResponse
+                }
+                return {success: true, file: true, data: {data: res.data, extension: extension, fileName: fileName}} as APIResponse
             }
         }).catch(err => {
             return failedAPIResponse("Request failed")
