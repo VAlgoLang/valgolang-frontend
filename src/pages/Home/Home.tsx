@@ -7,7 +7,7 @@ import {apiService} from "../../index";
 import PlacementManger from "../../components/PlacementManager/PlacementManager";
 import BoundaryManager, {Boundaries} from "../../utils/BoundaryManager";
 import {downloadFile, downloadZip} from "../../utils/FileDownloader";
-import JSZip from "jszip";
+import JSZip, { folder } from "jszip";
 import {editor as monacoEditor} from "monaco-editor";
 import GameModal from "../../components/GameModal/GameModal";
 import LoadingOverlay from "../../components/LoadingOverlay/LoadingOverlay";
@@ -42,6 +42,7 @@ const Home: React.FC = () => {
     const boundaryManager = new BoundaryManager(700, 400)
     const [videoInfo, setVideoInfo] = useState<VideoInfo>()
     const [videoModal, setVideoModal] = useState(false)
+    const [examples, setExamples] = useState<string[]>(["Bubblesort"]);
 
     useEffect(() => {
         if (showSuccess) {
@@ -49,6 +50,7 @@ const Home: React.FC = () => {
                 setShowSuccess(false)
             }, 5000)
         }
+        getExamples()
     }, [showSuccess])
 
     useEffect(() => {
@@ -103,6 +105,20 @@ const Home: React.FC = () => {
         }
     }
 
+    async function selectExampleFolder(folderName : string) {
+        let files = JSON.parse(JSON.stringify(await apiService.getExample(folderName)));
+
+        setManimDSL(files["manimFile"])
+        setManimFileName(folderName.toLowerCase().replace(/\s/g, "") + ".manimdsl")
+        editor?.setValue(files["manimFile"])
+        setFileType(FileType.MANIMDSLCODE)
+            
+        setStylesheet(files["stylesheetFile"])
+        setStylesheetFileName(folderName.toLowerCase().replace(/\s/g, "") + ".json")
+        editor?.setValue(files["stylesheetFile"])
+        setFileType(FileType.STYLESHEET)
+    }
+
     function switchFileType(flag: FileType) {
         // TODO: Find better way than session storage
         sessionStorage.setItem("currentFileType", flag.toString())
@@ -151,6 +167,13 @@ const Home: React.FC = () => {
             setAlertMessage(response.message)
         }
         setLoadingCalculation(false)
+    }
+
+    async function getExamples() {
+        setLoadingCalculation(true)
+        let response = JSON.parse(JSON.stringify(await apiService.getExamples()));
+        setExamples(response);
+        setLoadingCalculation(false);
     }
 
     async function validateCode() {
@@ -285,6 +308,17 @@ const Home: React.FC = () => {
                         <Card.Body>
                             <FileSelector name={"Import Directory"} onChange={filePickerChange} directory={true}/>
                             <FileSelector name={"Import File"} onChange={filePickerChange} directory={false}/>
+                        </Card.Body>
+                    </Card>
+
+                    <Card>
+                        <Card.Header>
+                            Examples Explorer
+                        </Card.Header>
+                        <Card.Body>
+                            <ul>
+                            {examples?.map(txt => <li><Button style={{width: "90%", margin: "2%"}} onClick={() => selectExampleFolder(txt)}>{txt}</Button></li>)}
+                            </ul>
                         </Card.Body>
                     </Card>
                 </Col>
