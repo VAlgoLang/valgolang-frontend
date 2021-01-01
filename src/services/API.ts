@@ -35,16 +35,14 @@ export class APIService {
                 let text = await blob.text()
                 return JSON.parse(text) as APIResponse
             } else {
+                const url = window.URL.createObjectURL(new Blob([res.data]));
+                const link = document.createElement('a');
+                link.href = url;
                 let extension = res.headers["content-type"].split("/")[1]
-                if((res.headers["content-type"] as string).includes("application/zip")) {
-                    const link = document.createElement('a');
-                    link.href = window.URL.createObjectURL(new Blob([res.data]));
-                    link.setAttribute('download', (fileName || 'out') + "." + extension);
-                    document.body.appendChild(link);
-                    link.click();
-                    return {success: true, file: false, data: {data: res.data, extension: extension, fileName: fileName}} as APIResponse
-                }
-                return {success: true, file: true, data: {data: res.data, extension: extension, fileName: fileName}} as APIResponse
+                link.setAttribute('download', (fileName || 'out')  + "." + extension);
+                document.body.appendChild(link);
+                link.click();
+                return {success: true, file: true, data: res.data} as APIResponse
             }
         }).catch(err => {
             return failedAPIResponse("Request failed")
@@ -66,14 +64,6 @@ export class APIService {
         data.append("file", new Blob([code]));
         data.append("stylesheet", new Blob([stylesheet]));
         return this.buildRequest("POST", "/compile/boundaries", data)
-    }
-
-    getExamples(){
-        return this.buildRequest("GET", "/examples/list");
-    }
-
-    getExample(folderName: string){
-        return this.buildRequest("GET", "/examples/example?file=" + folderName)
     }
 }
 
