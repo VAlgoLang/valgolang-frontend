@@ -67,6 +67,14 @@ export class APIService {
         data.append("stylesheet", new Blob([stylesheet]));
         return this.buildRequest("POST", "/compile/boundaries", data)
     }
+
+    getExamples(){
+        return this.buildRequest("GET", "/examples/list");
+    }
+
+    getExample(folderName: string){
+        return this.buildRequest("GET", "/examples/example?file=" + folderName)
+    }
 }
 
 

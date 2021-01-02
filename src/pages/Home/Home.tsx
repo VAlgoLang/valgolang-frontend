@@ -44,6 +44,7 @@ const Home: React.FC = () => {
     const boundaryManager = new BoundaryManager(700, 400)
     const [videoInfo, setVideoInfo] = useState<VideoInfo>()
     const [videoModal, setVideoModal] = useState(false)
+    const [examples, setExamples] = useState<string[]>(["Bubblesort"]);
 
     useEffect(() => {
         if (showSuccess) {
@@ -51,6 +52,7 @@ const Home: React.FC = () => {
                 setShowSuccess(false)
             }, 5000)
         }
+        getExamples()
     }, [showSuccess])
 
     useEffect(() => {
@@ -163,6 +165,13 @@ const Home: React.FC = () => {
             setAlertMessage(response.message)
         }
         setLoadingCalculation(false)
+    }
+
+    async function getExamples() {
+        setLoadingCalculation(true)
+        let response = JSON.parse(JSON.stringify(await apiService.getExamples()));
+        setExamples(response);
+        setLoadingCalculation(false);
     }
 
     async function validateCode() {
@@ -306,7 +315,7 @@ const Home: React.FC = () => {
                         </Card.Header>
                         <Card.Body>
                             <ul style={{listStyleType: "none", padding: 0, margin: 0}}>
-                            {examples?.map(txt => <li><span style={{cursor: "pointer"}} onClick={() => selectExampleFolder(txt)}><FontAwesomeIcon icon={faFolder}/> {txt}</span></li>)}
+                                {examples?.map(txt => <li><span style={{cursor: "pointer"}} onClick={() => selectExampleFolder(txt)}><FontAwesomeIcon icon={faFolder}/> {txt}</span></li>)}
                             </ul>
                         </Card.Body>
                     </Card>
