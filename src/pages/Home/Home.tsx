@@ -12,6 +12,8 @@ import {editor as monacoEditor} from "monaco-editor";
 import GameModal from "../../components/GameModal/GameModal";
 import LoadingOverlay from "../../components/LoadingOverlay/LoadingOverlay";
 import VideoModal, {VideoInfo} from "../../components/VideoModal/VideoModal";
+import {faFolder} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 export enum FileType {
     STYLESHEET,
@@ -101,6 +103,16 @@ const Home: React.FC = () => {
                 await handleZipUpload(file);
             }
         }
+    }
+
+    async function selectExampleFolder(folderName : string) {
+        let files = JSON.parse(JSON.stringify(await apiService.getExample(folderName)));
+        setStylesheet(files["stylesheetFile"])
+        setStylesheetFileName(folderName.toLowerCase().replace(/\s/g, "") + ".json")
+        setManimDSL(files["manimFile"])
+        setManimFileName(folderName.toLowerCase().replace(/\s/g, "") + ".manimdsl")
+        editor?.setValue(files["manimFile"])
+        setFileType(FileType.MANIMDSLCODE)
     }
 
     function switchFileType(flag: FileType) {
@@ -287,6 +299,17 @@ const Home: React.FC = () => {
                             <FileSelector name={"Import File"} onChange={filePickerChange} directory={false}/>
                         </Card.Body>
                     </Card>
+
+                    <Card style={{marginTop: "15px"}}>
+                        <Card.Header>
+                            Examples Explorer
+                        </Card.Header>
+                        <Card.Body>
+                            <ul style={{listStyleType: "none", padding: 0, margin: 0}}>
+                            {examples?.map(txt => <li><span style={{cursor: "pointer"}} onClick={() => selectExampleFolder(txt)}><FontAwesomeIcon icon={faFolder}/> {txt}</span></li>)}
+                            </ul>
+                        </Card.Body>
+                    </Card>
                 </Col>
                 <Col md={6}>
                     <div>
@@ -358,3 +381,4 @@ const Home: React.FC = () => {
 };
 
 export default Home;
+
