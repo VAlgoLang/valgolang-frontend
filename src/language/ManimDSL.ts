@@ -44,6 +44,7 @@ export const language = {
         'number',
         'boolean',
         'char',
+        'string',
         'break',
         'continue',
         'else',

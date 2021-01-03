@@ -44,12 +44,14 @@ RETURN: 'return';
 NUMBER_TYPE: 'number';
 BOOL_TYPE: 'boolean';
 CHAR_TYPE: 'char';
+STRING_TYPE: 'string';
 
 // Keywords
 COMMENT: 'comment';
 SLEEP: 'sleep';
 STACK: 'Stack';
 ARRAY: 'Array';
+LIST: 'List';
 TREE: 'Tree';
 TREE_NODE: 'Node';
 IF: 'if';
