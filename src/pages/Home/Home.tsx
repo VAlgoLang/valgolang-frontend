@@ -52,8 +52,11 @@ const Home: React.FC = () => {
                 setShowSuccess(false)
             }, 5000)
         }
-        getExamples()
     }, [showSuccess])
+
+    useEffect(() => {
+        getExamples()
+    }, [])
 
     useEffect(() => {
         if (alertMessage !== "") {
@@ -232,7 +235,7 @@ const Home: React.FC = () => {
         } else {
             return (
                 <Button style={{float: "right", marginTop: "10px"}}
-                        onClick={() => submitCode({})}>Compile!</Button>
+                        onClick={() => submitCode({})}>Generate Animation</Button>
             )
         }
     }
@@ -249,7 +252,7 @@ const Home: React.FC = () => {
         } else {
             return (
                 <Button style={{float: "right", marginTop: "10px"}} variant="info"
-                        onClick={() => getBoundaries()}>Place variables</Button>
+                        onClick={() => getBoundaries()}>Placement Manager</Button>
             )
         }
     }
@@ -337,10 +340,11 @@ const Home: React.FC = () => {
                         <Alert style={{margin: "10px"}} variant={'success'} onClose={() => setShowSuccess(false)}
                                dismissible>
                             All good!
+                            <p>The program successfully executed</p>
                         </Alert>}
                         {renderCompileButton()}
                         <Button style={{float: "right", margin: "10px"}} variant="success"
-                                onClick={validateCode}>Validate</Button>
+                                onClick={validateCode}>Validate Code</Button>
                         {renderPlaceButton()}
                     </div>
                     <div style={{width: "100%", margin: "0 auto"}}>
