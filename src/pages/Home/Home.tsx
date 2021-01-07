@@ -9,7 +9,7 @@ import BoundaryManager, {Boundaries} from "../../utils/BoundaryManager";
 import {downloadFile, downloadZip} from "../../utils/FileDownloader";
 import JSZip from "jszip";
 import {editor as monacoEditor} from "monaco-editor";
-import GameModal from "../../components/GameModal/GameModal";
+import LoadingModal from "../../components/LoadingModal/LoadingModal";
 import LoadingOverlay from "../../components/LoadingOverlay/LoadingOverlay";
 import VideoModal, {VideoInfo} from "../../components/VideoModal/VideoModal";
 import {faFolder} from "@fortawesome/free-solid-svg-icons";
@@ -34,7 +34,7 @@ const Home: React.FC = () => {
     const [hideCode, setHideCode] = useState(false)
     const [variableBlock, setVariableBlock] = useState(false)
     const [quality, setQuality] = useState("low")
-    const [loadingSubmission, setLoadingSubmission] = useState(false)
+    const [loadingSubmission, setLoadingSubmission] = useState("")
     const [loadingCalculation, setLoadingCalculation] = useState(false)
     const [outputFilename, setOutputFilename] = useState("animation")
     const [computedBoundary, setComputedBoundary] = useState<Boundaries>({})
@@ -138,7 +138,6 @@ const Home: React.FC = () => {
 
     async function submitCode(boundary: Boundaries) {
         setStage(0)
-        setLoadingSubmission(true)
         let stylesheetLatest = getStyleSheetText()
         if (boundary !== {} && stage === 1) {
             let parsedStylesheet = JSON.parse(stylesheetLatest || "{}")
@@ -146,14 +145,11 @@ const Home: React.FC = () => {
             stylesheetLatest = JSON.stringify(parsedStylesheet)
         }
         let response = await apiService.compileCode(getManiMDSLText() || "", stylesheetLatest || "{}", outputFilename, generatePython, quality)
-        if(response.file) {
-            setVideoModal(true)
-            setVideoInfo(response.data)
-        }
         if (!response.success) {
             setAlertMessage(response.message)
+        } else {
+            setLoadingSubmission(response.data)
         }
-        setLoadingSubmission(false)
     }
 
     async function getBoundaries() {
@@ -290,7 +286,10 @@ const Home: React.FC = () => {
     return (
         <Container fluid>
             {loadingCalculation && <LoadingOverlay/>}
-            {loadingSubmission && <GameModal/>}
+            <LoadingModal showModal={loadingSubmission !== ""} onHide={() => setLoadingSubmission("")} uid={loadingSubmission} setVideoData={(videoData: VideoInfo) => {
+                setVideoInfo(videoData)
+                setVideoModal(true)
+            }}/>
             <VideoModal videoInfo={videoInfo} isOpen={videoModal} closeModal={() => setVideoModal(false)}/>
             <Row md={12}>
                 <h1 style={{textAlign: "center", margin: "0 auto", padding: "20px"}}>ManimDSL Online Editor</h1>

@@ -68,6 +68,10 @@ export class APIService {
         return this.buildRequest("POST", "/compile/boundaries", data)
     }
 
+    getStatus(uid: string){
+        return this.buildRequest("GET", "/compile/status?uid=" + uid);
+    }
+
     getExamples(){
         return this.buildRequest("GET", "/examples/list");
     }
