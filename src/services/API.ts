@@ -42,7 +42,7 @@ export class APIService {
                     link.setAttribute('download', (fileName || 'out') + "." + extension);
                     document.body.appendChild(link);
                     link.click();
-                    return {success: true, file: false, data: {data: res.data, extension: extension, fileName: fileName}} as APIResponse
+                    return {success: true, file: true, data: {data: res.data, extension: extension, fileName: fileName}} as APIResponse
                 }
                 return {success: true, file: true, data: {data: res.data, extension: extension, fileName: fileName}} as APIResponse
             }

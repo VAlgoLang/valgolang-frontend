@@ -19,8 +19,11 @@ const LoadingModal: React.FC<ModalProps> = ({showModal, onHide, uid, setVideoDat
     function getStatus() {
         apiService.getStatus(uid).then((res) => {
             if (res.file) {
-                setIsLoop(false)
-                setVideoData(res.data)
+                if(res.data.extension !== "zip") {
+                    setIsLoop(false)
+                    setVideoData(res.data)
+                }
+                onHide()
             } else {
                 setLogs(res.data)
             }
