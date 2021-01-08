@@ -218,7 +218,7 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
             <div style={{marginBottom: "8px", marginTop: "8px", backgroundColor: "#252526"}}>
                 <span onClick={() => setFileType(FileType.MANIMDSLCODE)}
                       style={getStylingForTab(FileType.MANIMDSLCODE)}>
-                    {manimDSLName || "code.manimdsl"}
+                    {manimDSLName || "code.val"}
                     <FontAwesomeIcon onClick={() => downloadFile(FileType.MANIMDSLCODE)}
                                      style={{color: "white", marginLeft: "10px", padding: "2px"}} icon={faDownload}/>
                 </span>

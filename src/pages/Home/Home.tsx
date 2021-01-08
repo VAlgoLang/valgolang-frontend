@@ -27,7 +27,7 @@ const Home: React.FC = () => {
     const [currentFileType, setFileType] = useState<FileType>(FileType.MANIMDSLCODE);
     const [manimDSL, setManimDSL] = useState<string>();
     const [stylesheet, setStylesheet] = useState<string>();
-    const [manimFileName, setManimFileName] = useState<string>("code.manimdsl");
+    const [manimFileName, setManimFileName] = useState<string>("code.val");
     const [stylesheetFileName, setStylesheetFileName] = useState<string>("stylesheet.json");
     const [alertMessage, setAlertMessage] = useState("");
     const [generatePython, setGeneratePython] = useState(false)
@@ -72,7 +72,7 @@ const Home: React.FC = () => {
         jsZip.loadAsync(text).then(zip => {
             Object.keys(zip.files).forEach(function (filename) {
                 zip.files[filename].async('string').then(function (fileData) {
-                    if (filename.endsWith(".manimdsl")) {
+                    if (filename.endsWith(".val")) {
                         setManimDSL(fileData)
                         setManimFileName(filename)
                         editor?.setValue(fileData)
@@ -92,7 +92,7 @@ const Home: React.FC = () => {
         let files = e.target.files!;
         for (let i = 0; i < files.length; i++) {
             let file = files.item(i)!;
-            if (file.name.endsWith(".manimdsl")) {
+            if (file.name.endsWith(".val")) {
                 let text = await file.text();
                 setManimDSL(text)
                 setManimFileName(file.name)
@@ -115,7 +115,7 @@ const Home: React.FC = () => {
         setStylesheet(files["stylesheetFile"])
         setStylesheetFileName(folderName.toLowerCase().replace(/\s/g, "") + ".json")
         setManimDSL(files["manimFile"])
-        setManimFileName(folderName.toLowerCase().replace(/\s/g, "") + ".manimdsl")
+        setManimFileName(folderName.toLowerCase().replace(/\s/g, "") + ".val")
         editor?.setValue(files["manimFile"])
         setFileType(FileType.MANIMDSLCODE)
     }
@@ -292,7 +292,7 @@ const Home: React.FC = () => {
             }}/>
             <VideoModal videoInfo={videoInfo} isOpen={videoModal} closeModal={() => setVideoModal(false)}/>
             <Row md={12}>
-                <h1 style={{textAlign: "center", margin: "0 auto", padding: "20px"}}>ManimDSL Online Editor</h1>
+                <h1 style={{textAlign: "center", margin: "0 auto", padding: "20px"}}>VAlgoLang Online Editor</h1>
             </Row>
             <Row md={12} style={{marginBottom: "20px"}}>
                 <a style={{margin: "0 auto"}} href={"https://manimdsl.github.io"} target={"_new"}>Documentation</a>
