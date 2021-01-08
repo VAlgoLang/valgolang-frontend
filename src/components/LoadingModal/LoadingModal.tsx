@@ -19,7 +19,7 @@ const LoadingModal: React.FC<ModalProps> = ({showModal, onHide, uid, setVideoDat
     function getStatus() {
         apiService.getStatus(uid).then((res) => {
             if (res.file) {
-                if(res.data.extension !== "zip") {
+                if (res.data.extension !== "zip") {
                     setIsLoop(false)
                     setVideoData(res.data)
                 }
@@ -32,7 +32,11 @@ const LoadingModal: React.FC<ModalProps> = ({showModal, onHide, uid, setVideoDat
 
     useEffect(() => {
         if (showModal) {
-                getStatus();
+            setIsLoop(true)
+            getStatus();
+        } else {
+            setLogs([])
+            setIsLoop(false)
         }
         // eslint-disable-next-line
     }, [showModal])
@@ -55,8 +59,10 @@ const LoadingModal: React.FC<ModalProps> = ({showModal, onHide, uid, setVideoDat
                     })}
 
                 </div>
-                <p style={{textAlign: "center"}}>Generating...<Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true"
-                                                          style={{textAlign: "center", margin: "0 auto"}}/></p>
+                <p style={{textAlign: "center"}}>Generating...<Spinner as="span" animation="border" size="sm"
+                                                                       role="status" aria-hidden="true"
+                                                                       style={{textAlign: "center", margin: "0 auto"}}/>
+                </p>
             </Modal.Body>
         </Modal>
     )

@@ -1,4 +1,4 @@
-import { ANTLRErrorListener, RecognitionException, Recognizer } from "antlr4ts";
+import {ANTLRErrorListener, RecognitionException, Recognizer} from "antlr4ts";
 
 
 export interface ManimDSLError {

@@ -23,13 +23,21 @@ const VideoModal: React.FC<VideoModalProps> = ({isOpen, closeModal, videoInfo}) 
         link.click();
     }
 
+    function getVideo() {
+        if(videoInfo?.data) {
+            return <video src={window.URL.createObjectURL(videoInfo?.data)} controls style={{width: "100%"}} playsInline/>
+        } else {
+            return <div/>
+        }
+    }
+
     return (
         <Modal show={isOpen} onHide={closeModal} size={"lg"}>
             <Modal.Header closeButton>
                 <Modal.Title>Video Rendering Complete</Modal.Title>
             </Modal.Header>
             <Modal.Body style={{textAlign: "center"}}>
-                <video src={window.URL.createObjectURL(new Blob([videoInfo?.data]))} controls style={{width: "100%"}}/>
+                {getVideo()}
                 <Button onClick={downloadVideo} variant={"success"}>Download</Button>
             </Modal.Body>
         </Modal>
