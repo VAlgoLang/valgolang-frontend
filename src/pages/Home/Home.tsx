@@ -46,25 +46,25 @@ const Home: React.FC = () => {
     const [videoModal, setVideoModal] = useState(false)
     const [examples, setExamples] = useState<string[]>(["Bubblesort"]);
 
-    useEffect(() => {
-        if (showSuccess) {
-            setTimeout(() => {
-                setShowSuccess(false)
-            }, 5000)
-        }
-    }, [showSuccess])
+    // useEffect(() => {
+    //     if (showSuccess) {
+    //         setTimeout(() => {
+    //             setShowSuccess(false)
+    //         }, 5000)
+    //     }
+    // }, [showSuccess])
 
     useEffect(() => {
         getExamples()
     }, [])
-
-    useEffect(() => {
-        if (alertMessage !== "") {
-            setTimeout(() => {
-                setAlertMessage("")
-            }, 10000)
-        }
-    }, [alertMessage])
+    //
+    // useEffect(() => {
+    //     if (alertMessage !== "") {
+    //         setTimeout(() => {
+    //             setAlertMessage("")
+    //         }, 10000)
+    //     }
+    // }, [alertMessage])
 
     async function handleZipUpload(file: File) {
         const jsZip = new JSZip();
