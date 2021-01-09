@@ -92,6 +92,7 @@ const Home: React.FC = () => {
         let files = e.target.files!;
         for (let i = 0; i < files.length; i++) {
             let file = files.item(i)!;
+            console.log(file.name);
             if (file.name.endsWith(".val")) {
                 let text = await file.text();
                 setManimDSL(text)
@@ -317,7 +318,7 @@ const Home: React.FC = () => {
                         </Card.Header>
                         <Card.Body>
                             <ul style={{listStyleType: "none", padding: 0, margin: 0}}>
-                                {examples?.map(txt => <li><span style={{cursor: "pointer"}} onClick={() => selectExampleFolder(txt)}><FontAwesomeIcon icon={faFolder}/> {txt}</span></li>)}
+                                {examples?.map((txt, index) => <li key={index}><span style={{cursor: "pointer"}} onClick={() => selectExampleFolder(txt)}><FontAwesomeIcon icon={faFolder}/> {txt}</span></li>)}
                             </ul>
                         </Card.Body>
                     </Card>
