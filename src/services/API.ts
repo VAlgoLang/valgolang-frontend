@@ -58,7 +58,7 @@ export class APIService {
         data.append('pythonFile', producePython);
         data.append('outputName', outputFilename);
         data.append('quality', quality);
-        return this.buildRequest("POST", "/compile", data, outputFilename)
+        return this.buildRequest("POST", "/compile/compile", data, outputFilename)
     }
 
     getBoundaries(code: string, stylesheet: string) {
