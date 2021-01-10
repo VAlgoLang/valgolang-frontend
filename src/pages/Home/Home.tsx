@@ -226,7 +226,7 @@ const Home: React.FC = () => {
                 <Button style={{float: "right", marginTop: "10px"}} disabled>
                     <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true"
                              style={{marginRight: "5px"}}/>
-                    Compiling...
+                    Generating...
                 </Button>
             )
         } else {
@@ -252,6 +252,14 @@ const Home: React.FC = () => {
                         onClick={() => getBoundaries()}>Placement Manager</Button>
             )
         }
+    }
+
+    function resetProject() {
+        setManimFileName("code.val")
+        setStylesheetFileName("stylesheet.json")
+        editor?.setValue("")
+        setManimDSL("")
+        setStylesheet("")
     }
 
     function downloadFileType(fileType: FileType) {
@@ -326,6 +334,7 @@ const Home: React.FC = () => {
                 <Col md={6}>
                     <div>
                         <ManimEditor downloadFile={downloadFileType}
+                                     resetProject={resetProject}
                                      currentFileType={currentFileType} manimDSLName={manimFileName}
                                      styleSheetName={stylesheetFileName}
                                      setParentEditor={(e) => setEditor(e)} setFileType={switchFileType}
@@ -357,7 +366,7 @@ const Home: React.FC = () => {
                 <Col md={2}>
                     <Card>
                         <Card.Header>
-                            Compiling Options
+                            Animation Options
                         </Card.Header>
                         <Card.Body>
                             {/*TODO: Extract into component*/}

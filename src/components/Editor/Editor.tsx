@@ -2,7 +2,7 @@ import {Card} from "react-bootstrap";
 import React, {CSSProperties, useEffect, useState} from "react";
 import {FileType} from "../../pages/Home/Home";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faDownload} from "@fortawesome/free-solid-svg-icons";
+import {faDownload, faRedoAlt} from "@fortawesome/free-solid-svg-icons";
 import Editor, {Monaco, monaco} from '@monaco-editor/react';
 import {languageExtensionPoint, languageID} from "../../language/config";
 import {language, monarchLanguage} from "../../language/ManimDSL";
@@ -22,9 +22,10 @@ interface ManimEditorProps {
     downloadFile: (fileType: FileType) => void;
     currentFileType: FileType;
     downloadProject: () => void;
+    resetProject: () => void;
 }
 
-const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, setParentEditor, setFileType, currentFileType, downloadFile, downloadProject}) => {
+const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, setParentEditor, setFileType, currentFileType, downloadFile, downloadProject, resetProject}) => {
 
     let [monacoEditor, setMonacoEditor] = useState<editor.IStandaloneCodeEditor>();
     let [monacoInstance, setMonacoInstance] = useState<Monaco>();
@@ -228,6 +229,9 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                                      style={{color: "white", marginLeft: "10px", padding: "2px"}} icon={faDownload}/>
                 </span>
                 <span style={{float: "right", cursor: "pointer"}}>
+                    <FontAwesomeIcon onClick={resetProject}
+                                     style={{color: "white", marginRight: "10px"}}
+                                     icon={faRedoAlt}/>
                     <FontAwesomeIcon onClick={downloadProject}
                                      style={{color: "white", marginRight: "10px"}}
                                      icon={faDownload}/>
