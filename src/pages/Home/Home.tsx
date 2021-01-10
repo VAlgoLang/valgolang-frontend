@@ -114,16 +114,16 @@ const Home: React.FC = () => {
 
     async function selectExampleFolder(folderName: string) {
         let files = JSON.parse(JSON.stringify(await apiService.getExample(folderName)));
-        const videoInfo = await apiService.getExampleVideo(folderName)
-        if (videoInfo.success) {
-            setExampleBlob(videoInfo.data.data)
-        }
         setStylesheet(files["stylesheetFile"])
         setStylesheetFileName(folderName.toLowerCase().replace(/\s/g, "") + ".json")
         setManimDSL(files["manimFile"])
         setManimFileName(folderName.toLowerCase().replace(/\s/g, "") + ".val")
         editor?.setValue(files["manimFile"])
         setFileType(FileType.MANIMDSLCODE)
+        const videoInfo = await apiService.getExampleVideo(folderName)
+        if (videoInfo.success) {
+            setExampleBlob(videoInfo.data.data)
+        }
     }
 
     function switchFileType(flag: FileType) {
