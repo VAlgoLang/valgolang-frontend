@@ -108,7 +108,6 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
             }
         });
         editorInstance.onDidChangeModelContent((e) => {
-            // TODO: Find better way than session storage for currentFileType
             let isManimTab = (sessionStorage.getItem("currentFileType") || "1") === "1"
             if (isManimTab) {
                 let code = editorInstance.getValue()
@@ -242,7 +241,6 @@ const ManimEditor: React.FC<ManimEditorProps> = ({manimDSLName, styleSheetName, 
                         editorDidMount={(_, editor) => onEditorMount(editor)}/>}
             </div>
             <Menu id='menu_id'>
-                {/*{contextMenuSelection && <Item onClick={() => setShowAnnotationModal(true)}>Add Annotation</Item>}*/}
                 <Item onClick={() => setShowSubtitleModal(true)}>Add Subtitle</Item>
             </Menu>
             <SubtitleModal showModal={showSubtitleModal} setSubtitleParent={addSubtitle}

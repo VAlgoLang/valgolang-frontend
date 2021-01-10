@@ -79,6 +79,10 @@ export class APIService {
     getExample(folderName: string){
         return this.buildRequest("GET", "/examples/example?file=" + folderName)
     }
+
+    getExampleVideo(folderName: string){
+        return this.buildRequest("GET", "/examples/example/video?file=" + folderName)
+    }
 }
 
 

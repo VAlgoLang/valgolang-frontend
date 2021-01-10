@@ -40,6 +40,7 @@ const Home: React.FC = () => {
     const [computedBoundary, setComputedBoundary] = useState<Boundaries>({})
     const [autoBoundary, setAutoBoundary] = useState<Boundaries>({})
     const [stage, setStage] = useState(0);
+    const [exampleBlob, setExampleBlob] = useState<Blob | undefined>(undefined);
     const [showSuccess, setShowSuccess] = useState(false)
     const boundaryManager = new BoundaryManager(700, 400)
     const [videoInfo, setVideoInfo] = useState<VideoInfo>()
@@ -111,8 +112,12 @@ const Home: React.FC = () => {
         }
     }
 
-    async function selectExampleFolder(folderName : string) {
+    async function selectExampleFolder(folderName: string) {
         let files = JSON.parse(JSON.stringify(await apiService.getExample(folderName)));
+        const videoInfo = await apiService.getExampleVideo(folderName)
+        if (videoInfo.success) {
+            setExampleBlob(videoInfo.data.data)
+        }
         setStylesheet(files["stylesheetFile"])
         setStylesheetFileName(folderName.toLowerCase().replace(/\s/g, "") + ".json")
         setManimDSL(files["manimFile"])
@@ -122,7 +127,6 @@ const Home: React.FC = () => {
     }
 
     function switchFileType(flag: FileType) {
-        // TODO: Find better way than session storage
         sessionStorage.setItem("currentFileType", flag.toString())
         if (flag === currentFileType) {
             return;
@@ -260,6 +264,7 @@ const Home: React.FC = () => {
         editor?.setValue("")
         setManimDSL("")
         setStylesheet("")
+        setExampleBlob(undefined)
     }
 
     function downloadFileType(fileType: FileType) {
@@ -292,10 +297,19 @@ const Home: React.FC = () => {
         setStage(0)
     }
 
+    function downloadExample(blob: Blob) {
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.setAttribute('download', "example.mp4");
+        document.body.appendChild(link);
+        link.click();
+    }
+
     return (
         <Container fluid>
             {loadingCalculation && <LoadingOverlay/>}
-            <LoadingModal showModal={loadingSubmission !== ""} onHide={() => setLoadingSubmission("")} uid={loadingSubmission} setVideoData={(videoData: VideoInfo) => {
+            <LoadingModal showModal={loadingSubmission !== ""} onHide={() => setLoadingSubmission("")}
+                          uid={loadingSubmission} setVideoData={(videoData: VideoInfo) => {
                 setVideoInfo(videoData)
                 setVideoModal(true)
             }}/>
@@ -307,9 +321,9 @@ const Home: React.FC = () => {
                 <a style={{margin: "0 auto"}} href={"https://manimdsl.github.io"} target={"_new"}>Documentation</a>
             </Row>
             <Row>
-                <Col md={1}>
+                <Col xl={1} lg={0}>
                 </Col>
-                <Col md={2}>
+                <Col lg={3} xl={2}>
                     <Card>
                         <Card.Header>
                             File Explorer
@@ -326,10 +340,22 @@ const Home: React.FC = () => {
                         </Card.Header>
                         <Card.Body>
                             <ul style={{listStyleType: "none", padding: 0, margin: 0}}>
-                                {examples?.map((txt, index) => <li key={index}><span style={{cursor: "pointer"}} onClick={() => selectExampleFolder(txt)}><FontAwesomeIcon icon={faFolder}/> {txt}</span></li>)}
+                                {examples?.map((txt, index) => <li key={index}><span style={{cursor: "pointer"}}
+                                                                                     onClick={() => selectExampleFolder(txt)}><FontAwesomeIcon
+                                    icon={faFolder}/> {txt}</span></li>)}
                             </ul>
                         </Card.Body>
                     </Card>
+
+                    {exampleBlob && <Card style={{marginTop: "15px"}}>
+                        <Card.Header>
+                            Example Video
+                        </Card.Header>
+                        <video src={window.URL.createObjectURL(exampleBlob)} controls style={{width: "100%"}}
+                               playsInline/>
+                        <Button style={{float: "right", margin: "10px"}} variant="success"
+                                onClick={() => downloadExample(exampleBlob)}>Download Example Video</Button>
+                    </Card>}
                 </Col>
                 <Col md={6}>
                     <div>
@@ -363,7 +389,7 @@ const Home: React.FC = () => {
                                          initialState={computedBoundary} autoState={autoBoundary}/>}
                     </div>
                 </Col>
-                <Col md={2}>
+                <Col lg={3} xl={2}>
                     <Card>
                         <Card.Header>
                             Animation Options
@@ -372,7 +398,8 @@ const Home: React.FC = () => {
                             {/*TODO: Extract into component*/}
                             <Form.Check name={"Generate Python"} onChange={() => setGeneratePython(!generatePython)}
                                         label={"Generate Python file"}/>
-                            <Form.Check name={"Hide Variable Block"} onChange={() => updateHideVariableBlock(!variableBlock)}
+                            <Form.Check name={"Hide Variable Block"}
+                                        onChange={() => updateHideVariableBlock(!variableBlock)}
                                         label={"Hide variable block only"}/>
                             <Form.Check name={"Generate Python"} onChange={() => updateHideCode(!hideCode)}
                                         label={"Hide code and variable block"}/>
