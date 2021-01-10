@@ -14,6 +14,7 @@ import LoadingOverlay from "../../components/LoadingOverlay/LoadingOverlay";
 import VideoModal, {VideoInfo} from "../../components/VideoModal/VideoModal";
 import {faFolder} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import { useHistory } from "react-router-dom";
 
 export enum FileType {
     STYLESHEET,
@@ -22,6 +23,8 @@ export enum FileType {
 
 
 const Home: React.FC = () => {
+
+    const history = useHistory();
 
     const [editor, setEditor] = useState<monacoEditor.IStandaloneCodeEditor>()
     const [currentFileType, setFileType] = useState<FileType>(FileType.MANIMDSLCODE);
@@ -57,6 +60,7 @@ const Home: React.FC = () => {
 
     useEffect(() => {
         getExamples()
+        // eslint-disable-next-line
     }, [])
 
     useEffect(() => {
@@ -173,8 +177,12 @@ const Home: React.FC = () => {
 
     async function getExamples() {
         setLoadingCalculation(true)
-        let response = JSON.parse(JSON.stringify(await apiService.getExamples()));
-        setExamples(response);
+        let response = await apiService.getExamples();
+        if(response.success) {
+            setExamples(response.data);
+        } else {
+            history.push("/error")
+        }
         setLoadingCalculation(false);
     }
 
