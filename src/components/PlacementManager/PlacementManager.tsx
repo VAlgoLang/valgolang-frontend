@@ -143,7 +143,7 @@ const PlacementManger: React.FC<PlacementMangerProps> = ({width, height, initial
     return (
         <Modal show={showModal} onHide={() => hideModal(position, false)} size={"xl"}>
             <Modal.Header closeButton>
-                <Modal.Title>Place Data Structures</Modal.Title>
+                <Modal.Title>Placement Manager</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Row>
