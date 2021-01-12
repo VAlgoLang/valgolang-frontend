@@ -8,7 +8,7 @@ Frontend for VAlgoLang, written in React and Typescript
 
 If you haven't installed the VAlgoLang Compiler or want a quick way to startup the best way is to use docker:
 
-` docker run -p 5000:5000 manimdsl/manimdsl-frontend  `
+` docker run -p 5000:5000 valgolang/valgolang-frontend  `
 
 And go to `localhost:3000` in a browser.
 
