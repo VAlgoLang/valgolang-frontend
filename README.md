@@ -17,5 +17,5 @@ And go to `localhost:3000` in a browser.
 1. Clone this repo
 2. Run `npm install` to get all the dependencies
 3. Run `./antlrBuild.sh` to get all the grammar files compiled for ANTLR4
-4. Run `npm start` to start up the React Dev Environment (defaults to port 3000)
+4. Run `npm start` to start up the React Dev Environment (defaults to port 3000) or `npm test` to run the tests.
 

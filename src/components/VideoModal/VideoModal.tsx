@@ -32,7 +32,7 @@ const VideoModal: React.FC<VideoModalProps> = ({isOpen, closeModal, videoInfo}) 
     }
 
     return (
-        <Modal show={isOpen} onHide={closeModal} size={"lg"}>
+        <Modal id="video-modal" show={isOpen} onHide={closeModal} size={"lg"}>
             <Modal.Header closeButton>
                 <Modal.Title>Video Rendering Complete</Modal.Title>
             </Modal.Header>
