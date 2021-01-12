@@ -54,6 +54,8 @@
   },
   "devDependencies": {
     "@interactjs/types": "^1.10.0",
+    "@testing-library/jest-dom": "^5.11.8",
+    "@testing-library/react": "^11.2.3",
     "antlr4ts-cli": "^0.5.0-alpha.3"
   }
 }

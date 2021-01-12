@@ -42,7 +42,7 @@ const LoadingModal: React.FC<ModalProps> = ({showModal, onHide, uid, setVideoDat
     }, [showModal])
 
     return (
-        <Modal show={showModal} onHide={() => {
+        <Modal id="loading-modal" show={showModal} onHide={() => {
             setIsLoop(false)
             onHide()
         }} size={"lg"}>
