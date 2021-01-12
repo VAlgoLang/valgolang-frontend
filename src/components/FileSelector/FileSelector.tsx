@@ -23,7 +23,7 @@ const FileSelector: React.FC<FileSelectorProps> = ({onChange, name, directory}) 
     }
 
     return <div style={{marginBottom: "10px"}}>
-        <Button  size="lg" block onClick={clickFileUpload}>{name}</Button>
+        <Button data-testid="upload-button"  size="lg" block onClick={clickFileUpload}>{name}</Button>
         <input style={{display: "none"}} ref={inputRef} onChange={onChange} type="file" multiple/>
     </div>;
 }
