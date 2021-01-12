@@ -4,12 +4,6 @@ import VideoModal from "./VideoModal";
 
 afterEach(cleanup);
 
-jest.mock('../../index', () => ({
-    get apiService() {
-        return true // set some default value
-    }
-}))
-
 it("renders without crashing when closed", () => {
     const {baseElement} = render(<VideoModal  closeModal={() => {}}  isOpen={false}/>);
     expect(baseElement).toBeDefined();
