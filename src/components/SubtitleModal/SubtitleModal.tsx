@@ -43,7 +43,7 @@ const SubtitleModal: React.FC<SubtitleModalProps> = ({showModal, setSubtitlePare
     }
 
     return (
-        <Modal show={showModal} onHide={() => setModal(false)}>
+        <Modal id="subtitle-modal" show={showModal} onHide={() => setModal(false)}>
             <Modal.Header closeButton>
                 <Modal.Title>Add Subtitle</Modal.Title>
             </Modal.Header>

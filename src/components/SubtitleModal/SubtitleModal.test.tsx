@@ -1,6 +1,6 @@
 import React from 'react';
 import {cleanup, render} from '@testing-library/react';
-import VideoModal from "./VideoModal";
+import SubtitleModal from "./SubtitleModal";
 
 afterEach(cleanup);
 
@@ -11,13 +11,13 @@ jest.mock('../../index', () => ({
 }))
 
 it("renders without crashing when closed", () => {
-    const {baseElement} = render(<VideoModal  closeModal={() => {}}  isOpen={false}/>);
+    const {baseElement} = render(<SubtitleModal  setModal={() => {}}  setSubtitleParent={() => {}} showModal={false}/>);
     expect(baseElement).toBeDefined();
 });
 
 it("renders without crashing when open", () => {
-  const {baseElement} = render(<VideoModal  closeModal={() => {}}  isOpen={true}/>);
+    const {baseElement} = render(<SubtitleModal  setModal={() => {}}  setSubtitleParent={() => {}} showModal={true}/>);
   expect(baseElement).toBeDefined();
-  expect(baseElement.querySelector("[id=video-modal]")).toBeDefined()
+  expect(baseElement.querySelector("[id=subtitle-modal]")).toBeDefined()
 });
 
