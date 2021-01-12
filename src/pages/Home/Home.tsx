@@ -326,7 +326,7 @@ const Home: React.FC = () => {
                 <h1 style={{textAlign: "center", margin: "0 auto", padding: "20px"}}>VAlgoLang Online Editor</h1>
             </Row>
             <Row md={12} style={{marginBottom: "20px"}}>
-                <a style={{margin: "0 auto"}} href={"https://manimdsl.github.io"} target={"_new"}>Documentation</a>
+                <a style={{margin: "0 auto"}} href={"https://valgolang.github.io/"} target={"_new"}>Documentation</a>
             </Row>
             <Row>
                 <Col xl={1} lg={0}>
