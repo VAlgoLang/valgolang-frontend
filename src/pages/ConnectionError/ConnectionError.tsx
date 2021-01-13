@@ -11,6 +11,7 @@ const ConnectionError: React.FC = () => {
             <div data-testid="error-page" style={{width: "100%", textAlign: "center", margin: "0 auto", marginTop: "40px"}}>
                 <img src={connError} alt={"Connection Error"}/>
                 <h1 style={{width: "80%", margin: "0 auto"}}>Could not connect to the backend server. Please try again later</h1>
+                <a href={"/"}>Try again</a>
             </div>
         </Container>
     )
